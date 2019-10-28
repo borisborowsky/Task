@@ -1,0 +1,15 @@
+package com.company.orders;
+
+import java.util.Date;
+
+import com.company.library.BookStatus;
+import com.company.library.Customer;
+
+class BookLending {
+	private Date creationDate;
+	private Date borrowDate;
+	private Date returnDate;
+	private Customer member;
+	private int memberId;
+
+}

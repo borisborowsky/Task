@@ -1,0 +1,79 @@
+package com.company.resource;
+
+/**
+ * Root resource (exposed at "myresource" path)
+ */
+//@Path("myresource")
+//public class MyResource {
+//	
+//    /**
+//     * Method handling HTTP GET requests. The returned object will be sent
+//     * to the client as "text/plain" media type.
+//     *
+//     * @return String that will be returned as a text/plain response.
+//     */
+//	@GET
+//	@Path("catalog/{authour}")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public List<BookUnit> search(@PathParam("authour") String authour) {
+//		List<BookUnit> result = new ArrayList<>();
+//		
+//		result = new CatalogueService().search(authour);
+////		System.out.println("principal" + securityContext.getUserPrincipal());
+//
+//		return result;
+//	}
+//    
+//    BookUnit(String title, String type, String subject, 
+//			String authour,  Date publishedDate, Member member, Date borrowDate,
+//			double borrowPrice) {
+    
+//    @GET
+//    @Path("/create")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public void getIt() {
+//    	Transaction transaction = null;
+//
+//    	try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+//    		transaction = session.beginTransaction();
+//    		
+//    		Member member = new Member("Boris", "932190", "Bulgaria", 
+//    				"Sofia", "12309", Gender.MALE, "gho5t", "2031900");
+//    		
+//    		
+//    		BookUnit bookUnit1 = new BookUnit("titlebook", "Crime", "about..", "Oneal", 
+//    				new Date(), member, new Date(), 21321.2);
+//    		
+//    		BookUnit bookUnit2 = new BookUnit("titlebook1", "Romance", "about..", "kreos", 
+//    				new Date(), member, new Date(), 4444.2);
+//    		
+//    		member.getBorrowedBoooks().add(bookUnit1);
+//    		member.getBorrowedBoooks().add(bookUnit2);
+//    				
+//    		session.save(bookUnit1);
+//    		session.save(bookUnit2);
+//    		session.save(member);
+//    		
+//    		
+//    		transaction.commit();
+//    		session.close();
+//    	} catch (Exception e) {
+//    		if (transaction != null) {
+//    			transaction.rollback();
+//    		}
+//    		e.printStackTrace();
+//    	}
+//    }
+    
+//    Member(String name, String phone, String country,
+//			String city, String postCode, Gender gender, String username, 
+//			String password) {
+//		super(name, phone, country, city, postCode, gender);
+//		this.account = new Account(username, password);
+//		this.borrowedBoooks = new ArrayList<>();
+//		id = 0;
+//	}
+    
+
+

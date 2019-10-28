@@ -1,0 +1,7 @@
+package com.company.library;
+
+public interface Customer {
+	void returnBook(Book book);
+	boolean renewBook(Book book);
+	boolean borrowBook(Book book);
+}

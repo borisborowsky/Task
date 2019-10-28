@@ -1,0 +1,6 @@
+package com.company.app.wrapper;
+
+public class CredentialsWrapperJSON {
+	private String username;
+	private String password;
+}

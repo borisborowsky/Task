@@ -1,0 +1,14 @@
+package com.company.orders;
+
+import java.awt.print.Book;
+import java.util.Date;
+import java.util.List;
+
+public interface Query {
+	List<Book> searchByTitle(String title);
+	List<Book> searchByAuthour(String authour);
+	List<Book> searchBySubject(String subject);
+	List<Book> searchByPublicationDate(Date publishDate);
+	
+	
+}

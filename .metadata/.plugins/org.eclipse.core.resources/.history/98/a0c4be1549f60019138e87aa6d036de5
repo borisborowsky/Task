@@ -1,0 +1,10 @@
+package com.company.core;
+
+import com.company.orders.Fine;
+
+public interface Customer {
+	void returnBook(Book book);
+	boolean renewBook(Book book);
+	boolean borrowBook(Book book);
+	Fine checkForFine(Customer customer);
+}

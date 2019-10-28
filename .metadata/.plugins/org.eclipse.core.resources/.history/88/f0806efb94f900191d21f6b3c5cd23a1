@@ -1,0 +1,11 @@
+package com.company.catalogue;
+
+import java.util.List;
+
+import com.company.exception.RetriveResourceException;
+
+public interface Search {
+	public List<BookUnit> getBorrowedBooks(int userId) throws RetriveResourceException;
+	public BookUnit borrowBook(int userId, int bookId) throws RetriveResourceException;
+	public List<BookUnit> search(BookUnit book) throws RetriveResourceException;
+}

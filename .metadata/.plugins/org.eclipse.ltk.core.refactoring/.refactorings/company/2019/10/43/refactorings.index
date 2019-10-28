@@ -1,0 +1,58 @@
+1571813126772	Delete element
+1571814012807	Rename package 'com.company'
+1571814488474	Rename package 'com.company.repository'
+1571814507960	Delete element
+1571816686169	Rename type 'Member'
+1571816700318	Delete element
+1571817427521	Delete element
+1571818093477	Rename package 'com.company.repository'
+1571819135383	Delete element
+1571819326634	Delete element
+1571819700842	Delete element
+1571819852778	Delete element
+1571827808473	Rename package 'com.company.client'
+1571828161492	Delete element
+1571828241649	Rename type 'BookLending'
+1571833681189	Delete element
+1571833972332	Rename package 'com.company.dao'
+1571834194577	Rename type 'Main'
+1571841009343	Delete element
+1571841065480	Rename type 'MyFrame'
+1571883566308	Delete element
+1571889970719	Rename type 'PasswordUtils'
+1571890081387	Rename package 'com.company.endpoints'
+1571890852766	Delete element
+1571893076644	Move compilation unit
+1571898882043	Move compilation unit
+1571898911158	Move compilation unit
+1571898944346	Rename package 'com.company.admin'
+1571899042255	Rename package 'com.company.library'
+1571910447487	Rename type 'Users'
+1571912938001	Move compilation units
+1571912981720	Move compilation units
+1571912990129	Delete element
+1571920745366	Delete element
+1571996619234	Delete element
+1571999030888	Delete element
+1572010983961	Move compilation unit
+1572059000799	Delete element
+1572059154543	Move compilation units
+1572059251908	Rename package 'com.company.members'
+1572059456764	Move compilation units
+1572059476627	Delete element
+1572059591599	Move compilation unit
+1572059828199	Move compilation units
+1572059845661	Delete elements
+1572060007350	Rename type 'EmployeeFrame'
+1572060859129	Rename type 'Query'
+1572060905920	Move compilation units
+1572061028660	Rename type 'UserRepository'
+1572062994584	Rename package 'com.company.app.wrapper'
+1572063044794	Rename type 'CredentialsWrapperJSON'
+1572063061661	Rename type 'MemberWrapperJSON'
+1572064381528	Rename package 'com.company.cart'
+1572064804089	Move compilation unit
+1572084471636	Rename type 'BookPojoToJson'
+1572084873586	Rename type 'Catalogue'
+1572102161141	Delete element
+1572102527287	Rename type 'CatalogueService'

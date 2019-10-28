@@ -1,0 +1,47 @@
+package com.company.catalogue;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+
+import com.company.users.UserService;
+import com.google.gson.Gson;
+
+@Path("catalog")
+public class CatalogResource {
+	@Context
+	SecurityContext securityContext;
+	
+	@GET
+	@Path("borrow/{userId}/{bookId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public BookUnit search(@PathParam("userId") int userId, @PathParam("bookId") int bookId) {
+		return new CatalogService().borrowBook(userId, bookId);
+	}
+	
+	@POST
+	@Path("search/")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<BookUnit> search(String json) {
+		List<BookUnit> result = new ArrayList<>();
+		BookUnit book = new Gson().fromJson(json, BookUnit.class);
+
+		System.out.println(securityContext.getUserPrincipal());
+		result = new CatalogService().search(book);
+		
+		return result;
+	}
+
+
+}

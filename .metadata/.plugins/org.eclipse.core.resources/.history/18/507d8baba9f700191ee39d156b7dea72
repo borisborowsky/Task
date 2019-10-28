@@ -1,0 +1,11 @@
+package com.company.users;
+
+import com.company.cart.Book;
+import com.company.cart.Fine;
+
+public interface Customer {
+	void returnBook(Book book);
+	boolean renewBook(Book book);
+	boolean borrowBook(Book book);
+	Fine checkForFine(Customer customer);
+}

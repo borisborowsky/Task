@@ -1,0 +1,250 @@
+package com.company.app;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+
+import com.company.app.data.CredentialsWrapperJSON;
+
+public final class App extends JFrame implements Runnable {
+	public static final int PASSWORD_LENGTH = 8;
+	private JLabel loadingLbl;
+	private static String tokenSession;
+	
+	private JLabel labelLoadingProcess;
+	private LoggedUserFrame loggedUserView;
+	private final JLabel labelUsername = new JLabel("Enter username: ");
+	private final JLabel labelPassword = new JLabel("Enter password: ");
+	private final JTextField textUsername = new JTextField(20);
+	private final JPasswordField fieldPassword = new JPasswordField(20);
+
+	private final JButton buttonLogin = getButton(new ActionListener() {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String password = fieldPassword.getText();
+			String username = textUsername.getText();
+			loadingLbl.setVisible(true);
+			Authenticate authenticate = new Authenticate(username, password);
+			authenticate.execute();
+			
+		}
+
+	}, "Login");
+	private final JButton buttonRegister = getButton(e -> new RegisterFrame().setVisible(true), "Register");
+
+	private JLabel getLoadingLbl() {
+		ClassLoader classLoader = getClass().getClassLoader();
+		ImageIcon loading = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Gif/loader.gif")).getFile());
+		System.out.println(loading);
+		JLabel loadingLbl = new JLabel("Checking Credentials... ", loading, JLabel.CENTER);
+		loadingLbl.setVisible(false);
+		return loadingLbl;
+	}
+
+	@Override
+	public void run() {
+		final JPanel loginPanel = getLoginPanel();
+		pack();
+		setVisible(true);
+		setLocationRelativeTo(null);
+		
+	}
+
+	class Authenticate extends SwingWorker<String, Void> {
+		private String username = "";
+		private String password = "";
+		
+		Authenticate(String username, String password) {
+			this.username = username;
+			this.password = password;
+		}
+
+		private String login(String username, String password)
+				throws RuntimeException, ClientProtocolException, IOException {
+			final String URL = "http://localhost:8080/company/webapi/authentication";
+			final String Credentials_JSON = new CredentialsWrapperJSON(username, password).toString();
+			System.out.println(Credentials_JSON);
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+
+			HttpEntity httpEntity = new StringEntity(Credentials_JSON, ContentType.APPLICATION_JSON);
+
+			HttpPost httpPost = new HttpPost(URL);
+			httpPost.setEntity(httpEntity);
+
+			CloseableHttpResponse response = httpClient.execute(httpPost);
+			String token = "";
+
+			try {
+				if (response.getStatusLine().getStatusCode() != 200) {
+					throw new RuntimeException(
+							"Failed : HTTP error code : " + response.getStatusLine().getStatusCode());
+				}
+
+				System.out.println("Output from server ... \n");
+
+				try (BufferedReader br = new BufferedReader(
+						new InputStreamReader((response.getEntity().getContent())))) {
+					token = br.readLine();
+					System.out.println("Token:" + token);
+				}
+
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+				if (response != null)
+					httpClient.close();
+			}
+			return token;
+		}
+
+		@Override
+		protected String doInBackground() throws Exception {
+			try {
+				return login(username, password);
+			} catch (RuntimeException | ClientProtocolException e) {
+				e.printStackTrace();
+				return "";
+			}
+		}
+
+		@Override
+		public void done() {
+			
+			try {
+				if (get() == null) return;
+				tokenSession = get();
+				loadingLbl.setVisible(false);
+				new LoggedUserFrame().setVisible(true);
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}		
+		}
+	}
+
+	private JButton getButton(ActionListener actionListener, String text) {
+		final JButton btn = new JButton(text);
+		btn.addActionListener(actionListener);
+		return btn;
+	}
+
+	private JPanel getLoginPanel() {
+		final JPanel loginPanel = new JPanel(new GridBagLayout());
+		loadingLbl = getLoadingLbl();
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.anchor = GridBagConstraints.WEST;
+		constraints.insets = new Insets(10, 10, 10, 10);
+		
+		constraints.gridx = 4;
+		constraints.gridy = 1;
+		loginPanel.add(loadingLbl, constraints);
+		
+		// add components to the panel
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		loginPanel.add(labelUsername, constraints);
+		
+		constraints.gridx = 1;
+		loginPanel.add(textUsername, constraints);
+
+		constraints.gridx = 0;
+		constraints.gridy = 1;
+		loginPanel.add(labelPassword, constraints);
+
+		constraints.gridx = 1;
+		loginPanel.add(fieldPassword, constraints);
+
+		constraints.gridx = 0;
+		constraints.gridy = 2;
+		constraints.gridwidth = 2;
+		constraints.anchor = GridBagConstraints.WEST;
+		loginPanel.add(buttonLogin, constraints);
+
+		constraints.gridx = 0;
+		constraints.gridy = 2;
+		constraints.gridwidth = 2;
+		constraints.anchor = GridBagConstraints.EAST;
+		loginPanel.add(buttonRegister, constraints);
+
+		// set border for the panel
+		loginPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Login Panel"));
+
+		// add the panel to this frame
+		this.add(loginPanel);
+
+		return loginPanel;
+	}
+
+	private boolean is_Valid_Password(String password) {
+
+		if (password.length() < PASSWORD_LENGTH)
+			return false;
+
+		int charCount = 0;
+		int numCount = 0;
+		for (int i = 0; i < password.length(); i++) {
+
+			char ch = password.charAt(i);
+
+			if (is_Numeric(ch))
+				numCount++;
+			else if (is_Letter(ch))
+				charCount++;
+			else
+				return false;
+		}
+
+		return (charCount >= 2 && numCount >= 2);
+	}
+
+	private boolean is_Letter(char ch) {
+		ch = Character.toUpperCase(ch);
+		return (ch >= 'A' && ch <= 'Z');
+	}
+
+	private boolean is_Numeric(char ch) {
+
+		return (ch >= '0' && ch <= '9');
+	}
+}

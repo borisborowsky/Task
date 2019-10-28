@@ -1,0 +1,5 @@
+package com.company.repository;
+
+class Author {
+	private final String name;
+}

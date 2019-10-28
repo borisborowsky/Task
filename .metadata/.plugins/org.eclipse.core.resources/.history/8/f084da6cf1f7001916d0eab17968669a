@@ -1,0 +1,13 @@
+package com.company.books;
+
+import java.awt.print.Book;
+import java.util.Date;
+import java.util.List;
+
+public interface Search {
+	List<Book> search(String authour);
+	List<Book> search(String authour, String title);
+	List<Book> search(String authour, String title, String subject);
+	List<Book> search(String authour, String title, String subject, String publishDate);
+	
+}

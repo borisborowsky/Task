@@ -1,0 +1,50 @@
+package com.company.library;
+
+import java.util.Date;
+
+import javax.persistence.Entity;
+
+@Entity
+public final class Employee extends Person implements Bibliothecary {
+	private final Date hireDate;
+	private final double salary;
+	
+	Employee(String name, String phone, String country, 
+			String city, String postCode, Date hireDate,
+			double salary) {
+		super(name, phone, country, city, postCode);
+		this.hireDate = new Date();
+		this.salary = salary;
+	}
+	
+	@Override
+	public boolean addBook(Book bookUnit) {
+		return false;
+	}
+
+	@Override
+	public boolean addMember(Customer customer) {
+		return false;
+	}
+
+	@Override
+	public boolean removeMember(Customer customer) {
+		return false;
+	}
+
+	@Override
+	public boolean blockMember(Customer customer) {
+		return false;
+	}
+
+	@Override
+	public boolean unBlockMember(Customer customer) {
+		return false;
+	}
+
+	@Override
+	public boolean removeBook(Book book) {
+		return false;
+	}
+	
+}

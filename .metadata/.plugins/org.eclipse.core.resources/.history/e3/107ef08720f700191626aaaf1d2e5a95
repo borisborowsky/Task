@@ -1,0 +1,92 @@
+package com.company.authentication;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
+import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
+import com.company.core.Member;
+
+import com.company.utils.SecureUtils;
+import com.company.core.DBSession;
+import com.company.core.HibernateUtil;
+
+@Path("/authentication")
+public class Authentication {
+	private Session session;
+	private Transaction transaction;
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response authenticateUser(Credentials credentials) {
+		String username = credentials.getUsername();
+		String password = credentials.getPassword();
+		System.out.println(username + " Cred");
+		System.out.println(password + " Cred");
+
+		try {
+			// Authenticate the user using the credentials provided
+			authenticate(username, password);
+
+			// Issue a token for the user
+			String token = issueToken(username);
+
+			// Return the token on the response
+			return Response.ok(token).build();
+
+		} catch (Exception e) {
+			return Response.status(Response.Status.FORBIDDEN).build();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void authenticate(String username, String password) throws Exception {
+		Transaction transaction = null;
+		try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+			transaction = session.beginTransaction();
+
+			@SuppressWarnings("deprecation")
+			Member members = (Member) session.createCriteria(Member.class)
+					.add(Restrictions.eq("account.username", username))
+					.add(Restrictions.eq("account.password", password));
+		
+		    
+			System.out.println(members.size());
+			for (int i = 0; i < members.size(); i++)
+				System.out.println(members.get(i).getName());
+			double a = 7F;
+			transaction.commit();
+				
+			session.close();
+		} catch (HibernateException e) {
+			if (transaction != null)
+				transaction.rollback();
+			e.printStackTrace();
+		}
+
+	}
+
+	private String issueToken(String username) {
+		String token = SecureUtils.generateString();
+
+		return username;
+		// Issue a token (can be a random String pers
+	}
+}

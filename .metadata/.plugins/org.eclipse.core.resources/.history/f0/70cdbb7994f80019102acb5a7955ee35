@@ -1,0 +1,58 @@
+package com.company.books;
+
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+import org.hibernate.search.FullTextSession;
+import org.hibernate.search.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
+
+import com.company.utils.HibernateUtils;
+
+public class MainApp {
+
+
+   private static List<BookUnit> searchData(String text) {
+      List<BookUnit> departments = null;
+      Session session = null;
+      Transaction transaction = null;
+      try {
+         session = HibernateUtils.getSessionFactory().openSession();
+         transaction = session.getTransaction();
+         transaction.begin();
+
+         FullTextSession fullTextSession = Search.getFullTextSession(session);
+         fullTextSession.createIndexer().startAndWait();
+
+         QueryBuilder qb = fullTextSession.getSearchFactory()
+               .buildQueryBuilder().forEntity(BookUnit.class).get();
+
+         // Create lucene query
+         // Set indexed field
+         org.apache.lucene.search.Query lucenceQuery = 
+               qb.keyword().onFields("name", "employees.name")
+               .matching(text).createQuery();
+
+         // Warp lucene query in org.hibernate.query.Query
+         @SuppressWarnings("unchecked")
+         Query<BookUnit> query = fullTextSession.createFullTextQuery(lucenceQuery,
+        		 BookUnit.class);
+         departments = query.getResultList();
+
+         transaction.commit();
+      } catch (Exception e) {
+         e.printStackTrace();
+         if (transaction != null) {
+            transaction.rollback();
+         }
+      } finally {
+         if (session != null) {
+            session.close();
+         }
+      }
+      return departments;
+
+   }
+}

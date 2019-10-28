@@ -1,0 +1,33 @@
+package com.company.books;
+
+import java.util.Date;
+import java.util.Objects;
+
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import org.hibernate.search.annotations.ContainedIn;
+
+import com.company.users.Customer;
+
+@Entity
+public final class Fine {
+	private final int id;
+	
+	private final int bookId;
+	
+	private final Date fineDate;
+	
+	@ContainedIn
+    @ManyToOne(optional = false)
+	@JoinColumn(name = "member_id", insertable=false, updatable=false)
+	private final Customer customer;
+	
+	Fine(int fineId, int bookId, Date fineDate, Customer customer) {
+		this.fineId = fineId;
+		this.bookId = bookId;
+		this.fineDate = fineDate;
+		this.customer = Objects.requireNonNull(customer);
+	}
+}

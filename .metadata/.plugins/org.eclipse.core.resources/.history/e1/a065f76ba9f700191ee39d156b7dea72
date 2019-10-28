@@ -1,0 +1,5 @@
+package com.company.app.data;
+
+public class BookPojoToJson {
+
+}

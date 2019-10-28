@@ -1,0 +1,26 @@
+package com.company.library;
+
+abstract class Person {
+	private final String name;
+	private String phone;
+	private Address address;
+	
+	Person(String name, String phone, String country,
+			String city, String postCode) {
+		this.name = name;
+		this.phone = phone;
+		this.address = new Address(country, city, postCode);
+	}
+	
+	private class Address {
+		private String country;
+		private String city;
+		private String postCode;
+		
+		Address(String country, String city, String postCode) {
+			this.country = country;
+			this.city = city;
+			this.postCode = postCode;
+		}
+	}
+}

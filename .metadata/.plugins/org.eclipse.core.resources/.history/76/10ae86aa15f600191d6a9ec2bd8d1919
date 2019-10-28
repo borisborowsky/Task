@@ -1,0 +1,9 @@
+package com.company.authentication;
+
+public class User {
+	private static final String token;
+	
+	private static void keepTokenSession(String token) {
+		this.token = token;
+	}
+}

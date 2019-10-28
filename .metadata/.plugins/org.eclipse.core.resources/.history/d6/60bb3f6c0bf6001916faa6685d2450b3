@@ -1,0 +1,24 @@
+package com.company.library;
+
+import java.util.Date;
+import java.util.Objects;
+
+import javax.persistence.MappedSuperclass;
+
+@MappedSuperclass
+abstract class Book {
+	private final String title;
+	private final String type;
+	private final String subject;
+	private final String authour;
+	private final Date publishDate;
+	
+	Book(String title, String type, String subject,
+			String authour, Date publishDate) {
+		this.title = title;
+		this.type = type;
+		this.subject = subject;
+		this.authour = authour;
+		this.publishDate = Objects.requireNonNull(publishDate);
+	}
+}

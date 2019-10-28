@@ -1,0 +1,9 @@
+package com.company.library;
+
+public interface Bibliothecary {
+	boolean addBook(Book bookUnit);
+	boolean addMember(Customer customer);
+	boolean removeMember(Customer customer);
+	boolean blockMember(Customer customer);
+	boolean unBlockMember(Customer customer);
+}

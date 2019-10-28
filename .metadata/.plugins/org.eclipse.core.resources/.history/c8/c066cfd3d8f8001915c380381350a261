@@ -1,0 +1,10 @@
+package com.company.books;
+
+import com.company.users.Customer;
+import com.company.users.Member;
+
+public interface Catalog {
+	void addBook(BookUnit book);
+	void removeBook(int id);
+
+}

@@ -1,0 +1,38 @@
+package com.company.core;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+
+import com.company.core.Book;
+import com.company.core.BookUnit;
+import com.company.core.Employee;
+import com.company.core.Member;
+import com.company.core.Person;
+
+public class HibernateUtil {
+	private static SessionFactory sessionFactory;
+
+	public static SessionFactory getSessionFactory() {
+		if (sessionFactory == null) {
+			try {
+
+				Configuration configuration = new Configuration().configure().addAnnotatedClass(Book.class)
+						.addAnnotatedClass(BookUnit.class).addAnnotatedClass(Member.class)
+						.addAnnotatedClass(Employee.class).addAnnotatedClass(Person.class);
+
+				ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+						.applySettings(configuration.getProperties()).build();
+
+				System.out.println("Hibernate Java Config serviceRegistry created");
+				sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+				return sessionFactory;
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return sessionFactory;
+	}
+}

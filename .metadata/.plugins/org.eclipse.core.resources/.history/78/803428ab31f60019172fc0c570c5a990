@@ -1,0 +1,52 @@
+package com.company.core;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Objects;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+
+import com.company.core.BookUnit.BookStatus;
+import com.company.core.Person.Gender;
+
+public class DBSession {
+	private Session session;
+	
+	public DBSession() {
+		session = getSession();
+	}
+	
+	private static Session getSession() {
+		Configuration configuration = new Configuration().configure().addAnnotatedClass(Book.class)
+				.addAnnotatedClass(BookUnit.class).addAnnotatedClass(Member.class).addAnnotatedClass(Employee.class)
+				.addAnnotatedClass(Person.class);
+		ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+				.applySettings(configuration.getProperties()).build();
+		SessionFactory sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+		Session session = sessionFactory.openSession();
+		return session;
+	}
+	
+	public void createTables() {
+		Member member = new Member("Petur", "0895582321", "Bulgaria", "Sofia",
+				"1309", "user123", 1, "280486", Gender.MALE);
+		Date date = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
+		double price = 234.F;
+		BookUnit bookUnit = new BookUnit("No Place Like Home: A Novel","Crime", "The book is about...",
+				"Barbara ONeal", date, 2, member, new Date(), price);
+		
+		Transaction t = session.beginTransaction();
+		
+		session.save(member);
+		session.save(bookUnit);
+		
+		t.commit();
+	}
+}
+

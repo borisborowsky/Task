@@ -1,0 +1,9 @@
+package com.company.books;
+
+import com.company.users.Customer;
+import com.company.users.Member;
+
+public interface Bibliothecary {
+	void addBook(BookUnit book);
+	void removeBook(BookUnit book);
+}

@@ -1,0 +1,22 @@
+package com.company.core;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="member_tbl")
+public class MemberDb {
+	private int id;
+	private String username;
+	private String country;
+	private String city;
+	private String gender;
+	private String postcode;
+	private String mobile;
+	private String name;
+	private String password;
+	
+	MemberDb() {
+		
+	}
+}

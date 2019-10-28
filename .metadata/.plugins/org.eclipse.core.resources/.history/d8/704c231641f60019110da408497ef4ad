@@ -1,0 +1,57 @@
+package com.company.core;
+
+import java.util.Date;
+import java.util.Objects;
+
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="book_tbl")
+final class BookUnit extends Book {
+	public enum BookStatus { AVAILABLE,RESERVED,TAKEN,LOST }
+	
+	@Id
+	private final int id;
+	private final double borrowPrice;
+	
+	@ManyToOne
+	private final Member member;
+	
+	private final Date borrowDate;
+	private final Date returnDate;
+	
+	@Enumerated(EnumType.STRING)
+	private BookStatus bookStatus;
+	
+	BookUnit() {
+		id = 0;
+		member = null;
+		borrowPrice = 0;
+		borrowDate = new Date();
+		returnDate = new Date();
+		bookStatus = null;
+	}
+	
+	@SuppressWarnings("deprecation")
+	BookUnit(String title, String type, String subject, 
+			String authour,  Date publishedDate, int id, Member member, Date borrowDate,
+			double borrowPrice) {
+		
+		super(title, type, subject, authour, publishedDate);
+		this.id = id;
+		this.member = Objects.requireNonNull(member);
+		this.borrowDate = new Date();
+		this.returnDate = 
+				new Date(borrowDate.getYear(), borrowDate.getMonth() + 1,borrowDate.getHours());
+		this.borrowPrice = borrowPrice;
+		bookStatus = BookStatus.TAKEN;
+	}
+	
+	
+}

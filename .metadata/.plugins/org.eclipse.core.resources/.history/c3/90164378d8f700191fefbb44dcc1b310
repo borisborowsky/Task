@@ -1,0 +1,53 @@
+package com.company.app.data;
+
+import java.util.Date;
+
+public class BookPojoToJson {
+	private int id;
+	private String title;
+	private String type;
+	private String subject;
+	private String authour;
+	private String publishDate;
+	private double borrowPrice;
+	private Date borrowDate;
+	private Date returnDate;
+	private String bookStatus;
+
+	
+	public BookPojoToJson(String title, String type, String subject, String authour,
+			String publishDate, double borrowPrice, String bookStatus) {
+		this.title = title;
+		this.type = type;
+		this.subject = subject;
+		this.authour = authour;
+		this.publishDate = publishDate;
+		this.borrowPrice = borrowPrice;
+		this.bookStatus = bookStatus;
+		id = 0;
+	}
+	
+	
+	
+	@Override
+	public String toString() {
+		return title;
+	}
+
+
+
+	public String createJsonString() {
+		return "{ \r\n" + 
+				"	   \"title\":\"" + title + "\"" + ",\r\n" + 
+				"	   \"type\":\"" + type + "\"" + ",\r\n" + 
+				"	   \"subject\":\"" + subject + "\"" + ",\r\n" + 
+				"	   \"authour\":\"" + authour + "\"" + ",\r\n" + 
+				"	   \"publishDate\":" + "\"" + publishDate + "\"" + ",\r\n" + 
+				"	   \"borrowPrice\":" + "\"" + borrowPrice + "\"" + ",\r\n" + 
+				"	   \"bookStatus\":" + "\"" + bookStatus + "\"" + "\r\n" + 
+				"}";
+	}
+	
+	
+}
+

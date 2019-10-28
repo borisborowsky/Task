@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+"
+  codebase="http://localhost:8080/jnlp-example">
+    <information>
+        <title>Hello</title>
+        <vendor>Example</vendor>
+    </information>
+    <resources>
+        <j2se version="1.2+"/>
+        <jar href="hello.jar" main="true" />
+    </resources>
+    <application-desc/>
+</jnlp>

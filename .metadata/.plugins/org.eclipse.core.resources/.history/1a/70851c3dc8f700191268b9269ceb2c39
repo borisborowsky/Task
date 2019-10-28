@@ -1,0 +1,96 @@
+package com.company.resource;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Objects;
+
+import javax.ws.rs.GET;
+
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+import com.company.books.BookUnit;
+import com.company.users.Member;
+import com.company.users.Member.Account;
+import com.company.users.Person.Gender;
+import com.company.utils.HibernateUtil;
+
+
+
+/**
+ * Root resource (exposed at "myresource" path)
+ */
+@Path("myresource")
+public class MyResource {
+	
+    /**
+     * Method handling HTTP GET requests. The returned object will be sent
+     * to the client as "text/plain" media type.
+     *
+     * @return String that will be returned as a text/plain response.
+     */
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String getIt(@Context SecurityContext securityContext) {
+        return "Got it!";
+    }
+    
+//    BookUnit(String title, String type, String subject, 
+//			String authour,  Date publishedDate, Member member, Date borrowDate,
+//			double borrowPrice) {
+    
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public void getIt() {
+    	Transaction transaction = null;
+
+    	try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+    		transaction = session.beginTransaction();
+    		
+    		Member member = new Member("Boris", "932190", "Bulgaria", 
+    				"Sofia", "12309", Gender.MALE, "gho5t", "2031900");
+    		
+    		
+    		BookUnit bookUnit1 = new BookUnit("titlebook", "Crime", "about..", "Oneal", 
+    				new Date(), member, new Date(), 21321.2);
+    		
+    		BookUnit bookUnit2 = new BookUnit("titlebook1", "Romance", "about..", "kreos", 
+    				new Date(), member, new Date(), 4444.2);
+    		
+    		member.getBorrowedBoooks().add(bookUnit1);
+    		member.getBorrowedBoooks().add(bookUnit2);
+    				
+    		session.save(bookUnit1);
+    		session.save(bookUnit2);
+    		session.save(member);
+    		
+    		
+    		transaction.commit();
+    		session.close();
+    	} catch (Exception e) {
+    		if (transaction != null) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
+//    Member(String name, String phone, String country,
+//			String city, String postCode, Gender gender, String username, 
+//			String password) {
+//		super(name, phone, country, city, postCode, gender);
+//		this.account = new Account(username, password);
+//		this.borrowedBoooks = new ArrayList<>();
+//		id = 0;
+//	}
+    
+    
+}
+
+

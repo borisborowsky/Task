@@ -1,0 +1,13 @@
+package com.company.cart;
+
+import com.company.users.Customer;
+import com.company.users.Member;
+
+public interface Bibliothecary {
+	void addBook(Book book);
+	void removeBook(Book book);
+	void addMember(Member member);
+	boolean removeMember(Customer customer);
+	boolean blockMember(Customer customer);
+	boolean unBlockMember(Customer customer);
+}

@@ -1,0 +1,88 @@
+package com.company.books;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import javax.swing.JLabel;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+@Path("catalogue")
+class CatalogueResource {
+	@Context
+	SecurityContext securityContext;
+	
+
+	@GET
+	@Path("{authour}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<BookUnit> search(@PathParam("authour") String authour) {
+		List<BookUnit> result = new ArrayList<>();
+		
+		result = new CatalogueService().search(authour);
+//		System.out.println("principal" + securityContext.getUserPrincipal());
+
+		return result;
+	}
+	
+//	@GET
+//	@Path("/search/book/{authour}/{title}")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public List<BookUnit> search(@PathParam("authour") String authour,
+//			@PathParam("title") String title) {
+//		List<BookUnit> result = new ArrayList<>();
+////		System.out.println(title + " JSON");
+////		
+////		BookUnit book = new Gson().fromJson(json, BookUnit.class);
+////		System.out.println(book + " BOOK");
+////		new BookService().addBook(Objects.requireNonNull(book));
+//		return result;
+//	}
+//	
+//	@GET
+//	@Path("/search/book/{authour}/{title}/{subject}")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public List<BookUnit> search(@PathParam("authour") String authour, 
+//			@PathParam("title") String title, @PathParam("subject") String subject) {
+//		List<BookUnit> result = new ArrayList<>();
+////		System.out.println(title + " JSON");
+////		
+////		BookUnit book = new Gson().fromJson(json, BookUnit.class);
+////		System.out.println(book + " BOOK");
+////		new BookService().addBook(Objects.requireNonNull(book));
+//		return result;
+//	}
+//	
+//	@GET
+//	@Path("/search/book/{authour}/{title}/{subject}/{publishDate}")
+//	@Consumes(MediaType.APPLICATION_JSON)
+//	@Produces(MediaType.APPLICATION_JSON)
+//	public List<BookUnit> search(@PathParam("authour") String authour, 
+//			@PathParam("title") String title, @PathParam("subject") String subject,
+//			@PathParam("publishDate") String publishDate) {
+//		List<BookUnit> result = new ArrayList<>();
+////		System.out.println(title + " JSON");
+////		
+////		BookUnit book = new Gson().fromJson(json, BookUnit.class);
+////		System.out.println(book + " BOOK");
+////		new BookService().addBook(Objects.requireNonNull(book));
+//		return result;
+//	}
+	
+	
+	
+}

@@ -1,0 +1,10 @@
+import java.util.Date;
+
+class Example {
+	private Date date;
+	
+	Example(Date date) {
+		this.date = new Date(); // I want to take the current date + 1 month or 2 month etc...
+	}
+}
+// LocalDate ld = LocalDate.now().plusMonths(1); - LocalDate ld2 = LocalDate.now().plusMonths(2);

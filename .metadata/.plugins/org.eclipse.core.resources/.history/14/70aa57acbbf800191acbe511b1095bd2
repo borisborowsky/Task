@@ -1,0 +1,83 @@
+package com.company.users;
+
+import javax.persistence.Embedded;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Store;
+
+@MappedSuperclass
+public abstract class Person {
+	
+	public enum Gender { MALE, FEMALE }
+
+	@Enumerated(EnumType.STRING)
+	private final Gender gender;
+	
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final String name;
+	
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private String phone;
+	
+	@Embedded
+	private Address address;
+	
+	Person() {
+		this.gender = null;
+		this.name = "";
+	}
+	
+	Person(String name, String phone, String country,
+			String city, String postCode, Gender gender) {
+		this.name = name;
+		this.phone = phone;
+		this.address = new Address(country, city, postCode);
+		this.gender = gender;
+	}
+	
+	public static class Address {
+		private String country;
+		private String city;
+		private String postCode;
+		
+		Address() {}
+		
+		Address(String country, String city, String postCode) {
+			this.country = country;
+			this.city = city;
+			this.postCode = postCode;
+		}
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	public Gender getGender() {
+		return gender;
+	}
+
+	public String getName() {
+		return name;
+	}
+	
+	
+}

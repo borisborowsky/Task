@@ -1,0 +1,26 @@
+package com.company.orders;
+
+import java.util.Date;
+
+import javax.persistence.Entity;
+
+import com.company.core.*;
+import com.company.members.Customer;
+
+@Entity
+final class BookBorrow {
+	private int id;
+	private Date lendingDate;
+	private Date borrowDate;
+	private Date returnDate;
+	private Customer member;
+	private int memberId;
+	
+//	static void lendBook(Customer member) {
+//		
+//	}
+//	
+//	static BookLending getLendingDetails(int lendingId) {
+//		
+//	}
+}

@@ -1,0 +1,265 @@
+package com.company.app;
+
+import javax.swing.*;
+
+import com.company.app.data.BookPojoToJson;
+import com.company.app.data.MemberPojoToJson;
+import com.company.books.BookUnit;
+import com.company.users.Member;
+import com.company.users.Person.Gender;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.protobuf.TextFormat.ParseException;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.json.JSONArray;
+
+public class AdministratorFrame extends JFrame {
+
+	private Container c;
+
+	private JTextField tAuthour;
+	private JTextField tBorrowPrice;
+	private JTextField tSubject;
+	private JTextField tTitle;
+	private JTextField tType;
+	private JTextField tBookStatus;
+
+	private JComboBox cbYear;
+	private JComboBox cbMonth;
+	private JComboBox cbDates;
+
+	private JButton btnAdd;
+	private JButton btnRemove;
+
+	// constructor, to initialize the components
+	// with default values.
+	public AdministratorFrame() {
+		setTitle("Administrator Panel");
+		setBounds(300, 90, 900, 600);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setResizable(false);
+
+		final JLabel lblTitleFrame = getJLabel(this, "Manage Books", 30, 300, 30, 300, 30);
+
+		final JLabel lblAuthor = getJLabel(this, "Author", 15, 100, 20, 100, 100);
+		final JLabel lblPublishDate = getJLabel(this, "Publish Date", 15, 100, 20, 100, 150);
+		final JLabel lblBorrowPrice = getJLabel(this, "Borrow Price", 15, 100, 20, 100, 200);
+		final JLabel lblSubjcect = getJLabel(this, "Subject", 15, 100, 20, 100, 250);
+		final JLabel lblTitle = getJLabel(this, "Title", 15, 100, 20, 100, 300);
+		final JLabel lblType = getJLabel(this, "Type", 15, 100, 20, 100, 350);
+		final JLabel lblBookStatus = getJLabel(this, "Book Status", 15, 100, 20, 100, 400);
+
+		tAuthour = getJTextField(this, 15, 200, 20, 200, 100);
+
+		cbDates = getJComboBox(this, dates, 15, 190, 20, 140, 150);
+		cbMonth = getJComboBox(this, months, 15, 190, 20, 200, 150);
+		cbYear = getJComboBox(this, years, 15, 190, 20, 250, 150);
+
+		tBorrowPrice = getJTextField(this, 15, 200, 20, 200, 200);
+		tSubject = getJTextField(this, 15, 200, 20, 200, 250);
+		tTitle = getJTextField(this, 15, 200, 20, 200, 300);
+		tType = getJTextField(this, 15, 200, 20, 200, 350);
+		tBookStatus = getJTextField(this, 15, 200, 75, 200, 400);
+
+		btnAdd = getJButton(this, "Add", 15, 100, 20, 530, 540, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				createBook().execute();
+			}
+		});
+
+		btnRemove = getJButton(this, "Remove", 15, 100, 20, 580, 540, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String JSON_STRING = "1";
+				new BookService(JSON_STRING, "books/remove/book").execute();
+			}
+		});
+
+		c = getContentPane();
+		c.setLayout(null);
+
+		setVisible(true);
+	}
+
+	private class BookService extends SwingWorker<BookUnit, Void> {
+		private String JSON_STRING = "";
+		private final String URL = "http://localhost:8080/company/webapi/";
+		private String endPointUrl = "";
+		private String urlPath = "";
+
+		BookService(final String JSON_STRING, final String urlPath) {
+			this.JSON_STRING = JSON_STRING;
+			this.urlPath = urlPath;
+			this.endPointUrl = new StringBuilder(URL).append(urlPath).toString();
+		}
+
+		private void updateBook() throws UnsupportedOperationException, IOException {
+
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+
+			HttpEntity httpEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
+
+			HttpPost httpPost = new HttpPost(endPointUrl);
+			httpPost.setEntity(httpEntity);
+
+			CloseableHttpResponse response = httpClient.execute(httpPost);
+
+			try {
+
+				if (response.getStatusLine().getStatusCode() != 200) {
+					throw new RuntimeException(
+							"Failed : HTTP error code : " + response.getStatusLine().getStatusCode());
+				}
+
+				BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+				System.out.println("Output from server ... \n");
+
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+				if (response != null)
+					httpClient.close();
+			}
+		}
+
+		@Override
+		protected BookUnit doInBackground() {
+			System.out.println("Do in background");
+			try {
+				updateBook();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			return null;
+		}
+
+	}
+
+	BookService createBook() {
+		String year = (String) cbYear.getSelectedItem();
+		String month = (String) cbMonth.getSelectedItem();
+		String day = (String) cbDates.getSelectedItem();
+		String dateStr = new StringBuilder().append(year).append("-").append(month).append("-").append(day).toString();
+		Date date = parseDate(dateStr);
+		double borrowPrice = Double.parseDouble(tBorrowPrice.getText());
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		String format = formatter.format(date);
+		BookPojoToJson bookToPojoToJson = new BookPojoToJson(tTitle.getText(), tType.getText(), tSubject.getText(),
+				tAuthour.getText(), format, borrowPrice, tBookStatus.getText());
+
+		String JSON_STRING = bookToPojoToJson.toString();
+		System.out.println(JSON_STRING + " im api");
+		return new BookService(JSON_STRING, "books/add/book");
+	}
+
+	private JButton getJButton(JFrame jFrame, String text, int fontSize, int width, int height, int x, int y,
+			ActionListener aListener) {
+		JButton jButton = new JButton(text);
+		jButton.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jButton.setSize(width, height);
+		jButton.setLocation(x, y);
+		jButton.addActionListener(aListener);
+		jFrame.getContentPane().add(jButton);
+		return jButton;
+	}
+
+	private JLabel getJLabel(JFrame jFrame, String text, int fontSize, int width, int height, int x, int y) {
+		JLabel jLabel = new JLabel(text);
+		jLabel.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jLabel.setSize(width, height);
+		jLabel.setLocation(x, y);
+		jFrame.getContentPane().add(jLabel);
+		return jLabel;
+	}
+
+	private JComboBox getJComboBox(JFrame jframe, String[] a, int fontSize, int width, int height, int x, int y) {
+		JComboBox jComboBox = new JComboBox(a);
+
+		jComboBox.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jComboBox.setSize(width, height);
+		jComboBox.setLocation(x, y);
+		jframe.getContentPane().add(jComboBox);
+		return jComboBox;
+	}
+
+	private JTextArea getJTextArea(JFrame jFrame, int fontSize, int width, int height, int x, int y) {
+		JTextArea jTextArea = new JTextArea();
+		jTextArea.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jTextArea.setSize(width, height);
+		jTextArea.setLocation(x, y);
+		jTextArea.setLineWrap(true);
+		jFrame.getContentPane().add(jTextArea);
+		return jTextArea;
+	}
+
+	private JRadioButton getJRadionButton(JFrame jFrame, String text, int fontSize, int width, int height, int x, int y,
+			boolean selected) {
+		JRadioButton jRadionButton = new JRadioButton(text);
+		jRadionButton.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jRadionButton.setSelected(selected);
+		jRadionButton.setSize(width, height);
+		jRadionButton.setLocation(x, y);
+		jFrame.getContentPane().add(jRadionButton);
+		return jRadionButton;
+	}
+
+	private JTextField getJTextField(JFrame jFrame, int fontSize, int width, int height, int x, int y) {
+		JTextField jTextField = new JTextField();
+		jTextField.setFont(new Font("Verdana", Font.PLAIN, fontSize));
+		jTextField.setSize(width, height);
+		jTextField.setLocation(x, y);
+		jFrame.getContentPane().add(jTextField);
+		return jTextField;
+	}
+
+	private ButtonGroup getButtonGroup(JRadioButton val1, JRadioButton val2) {
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(val1);
+		buttonGroup.add(val2);
+		return buttonGroup;
+	}
+
+	private Date parseDate(String date) {
+		try {
+			return new SimpleDateFormat("yyyy-MM-dd").parse(date);
+		} catch (java.text.ParseException e) {
+			return null;
+		}
+	}
+
+	final private String dates[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+			"16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
+	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
+	final private String years[] = { "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004",
+			"2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
+			"2018", "2019" };
+
+}

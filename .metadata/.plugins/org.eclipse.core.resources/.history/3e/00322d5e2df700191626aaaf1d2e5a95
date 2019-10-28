@@ -1,0 +1,261 @@
+package com.company.app;
+
+import javax.swing.*;
+
+import com.company.core.DBSession;
+import com.company.core.Member;
+import com.company.core.Person.Gender;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.json.JSONArray;
+import com.company.core.Member;
+
+public class RegisterFrame extends JFrame {
+
+	private Container c;
+	private JTextField tName;
+	private JLabel mno;
+	private JTextField tfMobile;
+	private JRadioButton male;
+	private JRadioButton female;
+	private ButtonGroup gengp;
+	private JComboBox cbCountry;
+	private JComboBox cbCity;
+	private JComboBox cbYear;
+	private JTextArea tadd;
+	private JCheckBox term;
+	private JButton sub;
+	private JButton reset;
+	private JTextArea taResult;
+	private JLabel res;
+	private JTextArea resadd;
+	private JTextField tUsername;
+	private JTextField tPassword;
+	private JTextField tCountry;
+	private JTextField tCity;
+	private JTextField tPostalCode;
+	private JTextField tGender;
+	private JTextField tMobile;
+	private final String[] bulgarianCities = { "Varna", "Bourgas", "Sofia", "Plovdiv" };
+	private MemberWrapperJSON memberWrapperJSON;
+
+	// constructor, to initialize the components
+	// with default values.
+	public RegisterFrame() {
+		setTitle("Registration Form");
+		setBounds(300, 90, 900, 600);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setResizable(false);
+
+		c = getContentPane();
+		c.setLayout(null);
+
+		final JLabel lblTitle = getJLabel(this, "Registration Form", 30, 300, 30, 300, 30);
+		final JLabel lblName = getJLabel(this, "Name", 15, 100, 20, 100, 100);
+		final JLabel lblMobile = getJLabel(this, "Mobile", 15, 100, 20, 100, 150);
+		final JLabel lblGender = getJLabel(this, "Gender", 15, 100, 20, 100, 200);
+		final JLabel lblCountry = getJLabel(this, "Country", 15, 100, 20, 100, 250);
+		final JLabel lblCity = getJLabel(this, "City", 15, 100, 20, 100, 300);
+		final JLabel lblPostalCode = getJLabel(this, "Postal code", 15, 100, 20, 100, 350);
+		final JLabel lblUserName = getJLabel(this, "Username", 15, 100, 20, 100, 400);
+		final JLabel lblPassword = getJLabel(this, "Password", 15, 100, 20, 100, 450);
+
+		resadd = getJTextArea(this, 15, 200, 75, 580, 175);
+
+		cbCity = getJComboBox(this, bulgarianCities, 15, 190, 20, 200, 250);
+
+		cbCountry = getJComboBox(this, new String[] { "Bulgaria" }, 15, 190, 20, 200, 300);
+
+		tMobile = getJTextField(this, 15, 190, 20, 200, 150);
+
+		tPostalCode = getJTextField(this, 15, 190, 20, 200, 350);
+		tUsername = getJTextField(this, 15, 190, 20, 200, 400);
+		tPassword = getJTextField(this, 15, 190, 20, 200, 450);
+
+		taResult = getJTextArea(this, 15, 300, 400, 500, 100);
+		taResult.setEditable(false);
+
+		male = getJRadionButton(this, "Male", 15, 75, 20, 200, 200, true);
+		female = getJRadionButton(this, "Female", 15, 80, 20, 275, 200, false);
+		tName = getJTextField(this, 15, 190, 20, 200, 100);
+
+		gengp = getButtonGroup(male, female);
+
+		term = new JCheckBox("Accept Terms And Conditions.");
+		term.setFont(new Font("Arial", Font.PLAIN, 15));
+		term.setSize(250, 20);
+		term.setLocation(550, 510);
+		c.add(term);
+
+		sub = getJButton(this, "Submit", 15, 100, 20, 530, 540, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String gender = "";
+				if (male.isSelected())
+					gender = "Male";
+				else
+					gender = "Female";
+
+				memberWrapperJSON = new MemberWrapperJSON(gender, tName.getText(), tMobile.getText(),
+						(String) cbCountry.getSelectedItem(), (String) cbCity.getSelectedItem(), tPostalCode.getText(),
+						tUsername.getText(), tPassword.getText(), "ACTIVE");
+
+				String JSON_STRING = memberWrapperJSON.toString();
+				new PostForm(JSON_STRING).execute();
+			}
+
+		});
+		reset = getJButton(this, "Reset", 15, 100, 20, 680, 540, e -> System.out.println(""));
+
+		res = new JLabel("");
+		res.setFont(new Font("Arial", Font.PLAIN, 20));
+		res.setSize(500, 25);
+		res.setLocation(100, 500);
+		c.add(res);
+
+		setVisible(true);
+	}
+
+	private class PostForm extends SwingWorker<Member, Void> {
+		private String JSON_STRING = "";
+		private final String URL = "http://localhost:8080/company/webapi/members/member";
+
+		PostForm(final String JSON_STRING) {
+			this.JSON_STRING = JSON_STRING;
+		}
+
+		private void createMember() throws UnsupportedOperationException, IOException {
+
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+
+			HttpEntity httpEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
+
+			HttpPost httpPost = new HttpPost(URL);
+			httpPost.setEntity(httpEntity);
+
+			CloseableHttpResponse response = httpClient.execute(httpPost);
+
+			try {
+
+				if (response.getStatusLine().getStatusCode() != 200) {
+					throw new RuntimeException(
+							"Failed : HTTP error code : " + response.getStatusLine().getStatusCode());
+				}
+
+				BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+				System.out.println("Output from server ... \n");
+
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+				if (response != null)
+					httpClient.close();
+			}
+		}
+
+		@Override
+		protected Member doInBackground() {
+			System.out.println("Do in background");
+			try {
+				createMember();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			return null;
+		}
+
+	}
+
+	private JButton getJButton(JFrame jFrame, String text, int fontSize, int width, int height, int x, int y,
+			ActionListener aListener) {
+		JButton jButton = new JButton(text);
+		jButton.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jButton.setSize(width, height);
+		jButton.setLocation(x, y);
+		jButton.addActionListener(aListener);
+		jFrame.getContentPane().add(jButton);
+		return jButton;
+	}
+
+	private JLabel getJLabel(JFrame jFrame, String text, int fontSize, int width, int height, int x, int y) {
+		JLabel jLabel = new JLabel(text);
+		jLabel.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jLabel.setSize(width, height);
+		jLabel.setLocation(x, y);
+		jFrame.getContentPane().add(jLabel);
+		return jLabel;
+	}
+
+	private JComboBox getJComboBox(JFrame jframe, String[] a, int fontSize, int width, int height, int x, int y) {
+		JComboBox jComboBox = new JComboBox(a);
+
+		jComboBox.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jComboBox.setSize(width, height);
+		jComboBox.setLocation(x, y);
+		jframe.getContentPane().add(jComboBox);
+		return jComboBox;
+	}
+
+	private JTextArea getJTextArea(JFrame jFrame, int fontSize, int width, int height, int x, int y) {
+		JTextArea jTextArea = new JTextArea();
+		jTextArea.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jTextArea.setSize(width, height);
+		jTextArea.setLocation(x, y);
+		jTextArea.setLineWrap(true);
+		jFrame.getContentPane().add(jTextArea);
+		return jTextArea;
+	}
+
+	private JRadioButton getJRadionButton(JFrame jFrame, String text, int fontSize, int width, int height, int x, int y,
+			boolean selected) {
+		JRadioButton jRadionButton = new JRadioButton(text);
+		jRadionButton.setFont(new Font("Arial", Font.PLAIN, fontSize));
+		jRadionButton.setSelected(selected);
+		jRadionButton.setSize(width, height);
+		jRadionButton.setLocation(x, y);
+		jFrame.getContentPane().add(jRadionButton);
+		return jRadionButton;
+	}
+
+	private JTextField getJTextField(JFrame jFrame, int fontSize, int width, int height, int x, int y) {
+		JTextField jTextField = new JTextField();
+		jTextField.setFont(new Font("Verdana", Font.PLAIN, fontSize));
+		jTextField.setSize(width, height);
+		jTextField.setLocation(x, y);
+		jFrame.getContentPane().add(jTextField);
+		return jTextField;
+	}
+
+	private ButtonGroup getButtonGroup(JRadioButton val1, JRadioButton val2) {
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(val1);
+		buttonGroup.add(val2);
+		return buttonGroup;
+	}
+
+}

@@ -1,0 +1,70 @@
+package com.company.catalogue;
+
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.Objects;
+
+import javax.persistence.MappedSuperclass;
+
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
+
+@MappedSuperclass
+@Indexed
+public abstract class Book {
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final String title;
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final String type;
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final String subject;
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final String authour;
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final Date publishDate;
+	
+	Book() {
+		title = "";
+		type = "";
+		subject = "";
+		authour = "";
+		publishDate = new Date();
+	}
+	
+	Book(String title, String type, String subject,
+			String authour, Date publishDate) {
+		this.title = title;
+		this.type = type;
+		this.subject = subject;
+		this.authour = authour;
+		this.publishDate = Objects.requireNonNull(publishDate);
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public String getSubject() {
+		return subject;
+	}
+
+	public String getAuthour() {
+		return authour;
+	}
+
+	public Date getPublishDate() {
+		return publishDate;
+	}
+	
+	
+	
+	
+	
+}

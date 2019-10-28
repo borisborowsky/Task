@@ -1,0 +1,34 @@
+package com.company.core;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+
+import com.company.core.Person.Gender;
+
+public class DBSession {
+	private Session session;
+	
+	DBSession() {
+		session = getSession();
+	}
+	
+	private static Session getSession() {
+		Configuration configuration = new Configuration().configure().addAnnotatedClass(Book.class)
+				.addAnnotatedClass(BookUnit.class).addAnnotatedClass(Member.class).addAnnotatedClass(Employee.class)
+				.addAnnotatedClass(Person.class);
+		ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+				.applySettings(configuration.getProperties()).build();
+		SessionFactory sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+		Session session = sessionFactory.openSession();
+		return session;
+	}
+	
+	private static void createTables() {
+		Member member = new Member("Petur", "0895582321", "Bulgaria", "Sofia",
+				"1309", "user123", 1, "280486", Gender.MALE);
+	}
+}
+

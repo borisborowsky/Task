@@ -1,0 +1,6 @@
+package com.company.books;
+
+interface ManageBook {
+	void addBook(BookUnit book);
+    void removeBook(int id);
+}

@@ -1,0 +1,23 @@
+package com.company.orders;
+
+import java.util.Date;
+import java.util.Objects;
+
+import javax.persistence.Entity;
+
+import com.company.library.Customer;
+
+@Entity
+public class Fine {
+	private final int fineId;
+	private final int bookId;
+	private final Date dateFine;
+	private final Customer customer;
+	
+	Fine(int fineId, int bookId, Date date, Customer customer) {
+		this.fineId = fineId;
+		this.bookId = bookId;
+		this.dateFine = dateFine;
+		this.customer = Objects.requireNonNull(customer);
+	}
+}

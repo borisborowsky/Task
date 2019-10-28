@@ -1,0 +1,11 @@
+package com.company.books;
+
+import java.util.List;
+
+import com.company.users.Customer;
+import com.company.users.Member;
+
+public interface Catalog {
+	BookUnit search(int userId, int bookId);
+	List<BookUnit> search(String json);
+}

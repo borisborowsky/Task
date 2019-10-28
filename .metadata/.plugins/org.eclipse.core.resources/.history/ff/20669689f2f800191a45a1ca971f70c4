@@ -1,0 +1,188 @@
+package com.company.app;
+
+import javax.swing.*;
+
+import com.company.app.data.BookView;
+import com.company.app.data.MemberView;
+import com.company.app.utils.FComponent;
+import com.company.catalogue.BookUnit;
+import com.company.users.Member;
+import com.company.users.Person.Gender;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.protobuf.TextFormat.ParseException;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.json.JSONArray;
+
+public class Administrator extends JFrame {
+
+	private Container c;
+
+	private JTextField tAuthour;
+	private JTextField tBorrowPrice;
+	private JTextField tSubject;
+	private JTextField tTitle;
+	private JTextField tType;
+	private JTextField tBookStatus;
+
+	private JComboBox cbYear;
+	private JComboBox cbMonth;
+	private JComboBox cbDates;
+
+	private JButton btnAdd;
+	private JButton btnRemove;
+
+	// constructor, to initialize the components
+	// with default values.
+	public Administrator() {
+		setTitle("Administrator Panel");
+		setBounds(300, 90, 900, 600);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setResizable(false);
+
+		FComponent.getJLabel(this, "Manage Books", 30, 300, 30, 300, 30);
+		
+		FComponent.getJLabel(this, "Author", 15, 100, 20, 100, 100);
+		FComponent.getJLabel(this, "Publish Date", 15, 100, 20, 100, 150);
+		FComponent.getJLabel(this, "Borrow Price", 15, 100, 20, 100, 200);
+		FComponent.getJLabel(this, "Subject", 15, 100, 20, 100, 250);
+		FComponent.getJLabel(this, "Title", 15, 100, 20, 100, 300);
+		FComponent.getJLabel(this, "Type", 15, 100, 20, 100, 350);
+		FComponent.getJLabel(this, "Book Status", 15, 100, 20, 100, 400);
+
+		tAuthour = FComponent.getJTextField(this, 15, 200, 20, 200, 100);
+
+		cbDates = FComponent.getJComboBox(this, dates, 15, 80, 20, 200, 150);
+		cbMonth = FComponent.getJComboBox(this, months, 15, 80, 20, 270, 150);
+		cbYear = FComponent.getJComboBox(this, years, 15, 80, 20, 370, 150);
+
+		tBorrowPrice = FComponent. getJTextField(this, 15, 200, 20, 200, 200);
+		tSubject = FComponent.getJTextField(this, 15, 200, 20, 200, 250);
+		tTitle = FComponent.getJTextField(this, 15, 200, 20, 200, 300);
+		tType = FComponent.getJTextField(this, 15, 200, 20, 200, 350);
+		tBookStatus = FComponent.getJTextField(this, 15, 200, 75, 200, 400);
+
+		btnAdd = FComponent.getJButton(this, "Add", 15, 100, 20, 530, 540, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				createBook().execute();
+			}
+		});
+
+		btnRemove = FComponent.getJButton(this, "Remove", 15, 100, 20, 580, 540, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String JSON_STRING = "1";
+				new BookService(JSON_STRING, "books/remove/book").execute();
+			}
+		});
+
+		c = getContentPane();
+		c.setLayout(null);
+
+		setVisible(true);
+	}
+
+	private class BookService extends SwingWorker<BookUnit, Void> {
+		private String JSON_STRING = "";
+		private final String URL = "http://localhost:8080/company/webapi/";
+		private String endPointUrl = "";
+		private String urlPath = "";
+
+		BookService(final String JSON_STRING, final String urlPath) {
+			this.JSON_STRING = JSON_STRING;
+			this.urlPath = urlPath;
+			this.endPointUrl = new StringBuilder(URL).append(urlPath).toString();
+		}
+
+		private void updateBook() throws UnsupportedOperationException, IOException {
+
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+
+			HttpEntity httpEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
+
+			HttpPost httpPost = new HttpPost(endPointUrl);
+			httpPost.setEntity(httpEntity);
+
+			CloseableHttpResponse response = httpClient.execute(httpPost);
+
+			try {
+
+				if (response.getStatusLine().getStatusCode() != 200) {
+					throw new RuntimeException(
+							"Failed : HTTP error code : " + response.getStatusLine().getStatusCode());
+				}
+
+				BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+				System.out.println("Output from server ... \n");
+
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+				if (response != null)
+					httpClient.close();
+			}
+		}
+
+		@Override
+		protected BookUnit doInBackground() {
+			System.out.println("Do in background");
+			try {
+				updateBook();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+	}
+
+	private BookService createBook() {
+		String year = (String) cbYear.getSelectedItem();
+		String month = (String) cbMonth.getSelectedItem();
+		String day = (String) cbDates.getSelectedItem();
+		String date = FComponent.convertCbtoString(year, month, day);
+		double borrowPrice = Double.parseDouble(tBorrowPrice.getText());
+		
+		BookView book = new BookView(0, tTitle.getText(), tType.getText(), tSubject.getText(),
+				tAuthour.getText(), date, borrowPrice, tBookStatus.getText());
+		String json = book.createJsonString();
+		System.out.println(json + " im api");
+		return new BookService(json, "books/add/book");
+	}
+
+
+	final private String dates[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+			"16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
+	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
+	final private String years[] = { "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004",
+			"2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
+			"2018", "2019" };
+	
+	
+}

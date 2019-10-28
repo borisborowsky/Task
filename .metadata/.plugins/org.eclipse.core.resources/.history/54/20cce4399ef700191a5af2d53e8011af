@@ -1,0 +1,65 @@
+package com.company.core;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Objects;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
+
+import com.company.core.BookUnit.BookStatus;
+import com.company.users.Employee;
+import com.company.users.Member;
+import com.company.users.Person;
+import com.company.users.Person.Gender;
+
+public class DBSession {
+	private Session session = getSession();
+	public DBSession() {
+	
+	}
+	
+
+	public Session getSession() {
+		Configuration configuration = new Configuration().configure().addAnnotatedClass(Book.class)
+				.addAnnotatedClass(BookUnit.class).addAnnotatedClass(Member.class).addAnnotatedClass(Employee.class)
+				.addAnnotatedClass(Person.class);
+		ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+				.applySettings(configuration.getProperties()).build();
+		SessionFactory sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+		Session session = sessionFactory.openSession();
+		return session;
+	}
+	
+	
+//	public void createTables() {
+//		Member member = new Member("Petur", "0895582321", "Bulgaria", "Sofia",
+//				"1309", Gender.MALE, "user123", 1, "280486");
+//		Date date = new GregorianCalendar(2014, Calendar.FEBRUARY, 11).getTime();
+//		double price = 234.F;
+//		BookUnit bookUnit = new BookUnit("No Place Like Home: A Novel","Crime", "The book is about...",
+//				"Barbara ONeal", date, 1, member, new Date(), price);
+//		
+//		BookUnit bookUnit1 = new BookUnit("When We Believed in Mermaids: A Novel","Crime", "The book is about...",
+//				"When we believe in Mermaids", date, 2, member, new Date(), 523F);
+//		
+//		member.getBorrowedBooks().add(bookUnit);
+//		member.getBorrowedBooks().add(bookUnit1);
+//		
+//		Transaction t = session.beginTransaction();
+//		session.save(bookUnit);
+//		session.save(bookUnit1);
+//		
+//		session.save(member);
+//	
+//		
+//		t.commit();
+//		session.close();
+//	}
+}
+

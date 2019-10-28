@@ -1,0 +1,14 @@
+package com.company.orders;
+
+import java.util.Date;
+
+import javax.persistence.Entity;
+
+import com.company.library.Customer;
+
+@Entity
+public class Fine {
+	private final Date dateFine;
+	private final int bookId;
+	private final Customer customer;
+}

@@ -1,0 +1,8 @@
+package com.company.catalogue;
+
+import com.company.exception.RetriveResourceException;
+
+interface ManageBook thronws throws RetriveResourceException{
+	void addBook(BookUnit book);
+    void removeBook(int id);
+}

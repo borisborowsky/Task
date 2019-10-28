@@ -1,0 +1,12 @@
+package com.company.users;
+
+import com.company.books.Book;
+import com.company.books.BookUnit;
+import com.company.books.Fine;
+
+public interface Customer {
+	void returnBook(Book book);
+	boolean renewBook(Book book);
+	Fine checkForFine(Customer customer);
+	
+}

@@ -1,0 +1,190 @@
+package com.company.app;
+
+import javax.swing.*;
+
+import com.company.app.data.MemberView;
+import com.company.app.utils.FComponent;
+import com.company.users.Member;
+import com.company.users.Person.Gender;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.json.JSONArray;
+
+public class Register extends JFrame {
+
+	private Container container;
+	private JTextField tName;
+	private JLabel mno;
+	private JTextField tfMobile;
+	private JRadioButton male;
+	private JRadioButton female;
+	private ButtonGroup gengp;
+	private JComboBox cbCountry;
+	private JComboBox cbCity;
+	private JComboBox cbYear;
+	private JTextArea tadd;
+	private JCheckBox term;
+	private JButton sub;
+	private JButton reset;
+	private JTextArea taResult;
+	private JLabel res;
+	private JTextArea resadd;
+	private JTextField tUsername;
+	private JTextField tPassword;
+	private JTextField tCountry;
+	private JTextField tCity;
+	private JTextField tPostalCode;
+	private JTextField tGender;
+	private JTextField tMobile;
+	private final String[] bulgarianCities = { "Varna", "Bourgas", "Sofia", "Plovdiv" };
+	private MemberView member;
+
+	// constructor, to initialize the components
+	// with default values.
+	public Register() {
+		setTitle("Registration Form");
+		setBounds(300, 90, 900, 600);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setResizable(false);
+
+		container = getContentPane();
+		container.setLayout(null);
+
+		FComponent.getJLabel(this, "Registration Form", 30, 300, 30, 300, 30);
+		FComponent.getJLabel(this, "Name", 15, 100, 20, 100, 100);
+		FComponent.getJLabel(this, "Mobile", 15, 100, 20, 100, 150);
+		FComponent.getJLabel(this, "Gender", 15, 100, 20, 100, 200);
+		FComponent.getJLabel(this, "Country", 15, 100, 20, 100, 250);
+		FComponent.getJLabel(this, "City", 15, 100, 20, 100, 300);
+		FComponent.getJLabel(this, "Postal code", 15, 100, 20, 100, 350);
+		FComponent.getJLabel(this, "Username", 15, 100, 20, 100, 400);
+		FComponent.getJLabel(this, "Password", 15, 100, 20, 100, 450);
+
+		resadd = FComponent.getJTextArea(this, 15, 200, 75, 580, 175);
+		cbCity = FComponent.getJComboBox(this, bulgarianCities, 15, 190, 20, 200, 250);
+		cbCountry = FComponent.getJComboBox(this, new String[] { "Bulgaria" }, 15, 190, 20, 200, 300);
+		tMobile = FComponent.getJTextField(this, 15, 190, 20, 200, 150);
+		tPostalCode = FComponent.getJTextField(this, 15, 190, 20, 200, 350);
+		tUsername = FComponent.getJTextField(this, 15, 190, 20, 200, 400);
+		tPassword = FComponent.getJTextField(this, 15, 190, 20, 200, 450);
+		taResult = FComponent.getJTextArea(this, 15, 300, 400, 500, 100);
+		taResult.setEditable(false);
+
+		male = FComponent.getJRadionButton(this, "Male", 15, 75, 20, 200, 200, true);
+		female = FComponent.getJRadionButton(this, "Female", 15, 80, 20, 275, 200, false);
+		tName = FComponent.getJTextField(this, 15, 190, 20, 200, 100);
+
+		gengp = FComponent.getButtonGroup(male, female);
+
+		term = new JCheckBox("Accept Terms And Conditions.");
+		term.setFont(new Font("Arial", Font.PLAIN, 15));
+		term.setSize(250, 20);
+		term.setLocation(550, 510);
+		container.add(term);
+
+		sub = FComponent.getJButton(this, "Submit", 15, 100, 20, 530, 540, (ActionListener) arg0 -> {
+            String gender = "";
+            if (male.isSelected())
+                gender = "Male";
+            else
+                gender = "Female";
+
+            member = new MemberView(gender, tName.getText(), tMobile.getText(),
+                    (String) cbCountry.getSelectedItem(), (String) cbCity.getSelectedItem(), tPostalCode.getText(),
+                    tUsername.getText(), tPassword.getText(), "ACTIVE");
+            String JSON_STRING = member.toString();
+            new PostForm(JSON_STRING).execute();
+        });
+		
+		reset = FComponent.getJButton(this, "Reset", 15, 100, 20, 680, 540, e -> 
+		new Administrator().setVisible(true));
+
+		res = new JLabel("");
+		res.setFont(new Font("Arial", Font.PLAIN, 20));
+		res.setSize(500, 25);
+		res.setLocation(100, 500);
+		container.add(res);
+
+		setVisible(true);
+	}
+
+	private class PostForm extends SwingWorker<MemberView, Void> {
+		private String JSON_STRING = "";
+		private final String URL = "http://localhost:8080/company/webapi/members/member";
+
+		PostForm(final String JSON_STRING) {
+			this.JSON_STRING = JSON_STRING;
+		}
+
+		private void createMember() throws UnsupportedOperationException, IOException {
+
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+
+			HttpEntity httpEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
+
+			HttpPost httpPost = new HttpPost(URL);
+			httpPost.setEntity(httpEntity);
+
+			CloseableHttpResponse response = httpClient.execute(httpPost);
+
+			try {
+
+				if (response.getStatusLine().getStatusCode() != 200) {
+					throw new RuntimeException(
+							"Failed : HTTP error code : " + response.getStatusLine().getStatusCode());
+				}
+
+				BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+				System.out.println("Output from server ... \n");
+
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+				if (response != null)
+					httpClient.close();
+			}
+		}
+
+		@Override
+		protected MemberView doInBackground() {
+			System.out.println("Do in background");
+			try {
+				createMember();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			return null;
+		}
+		
+		 @Override
+		 protected void done() {
+		       
+		 }
+
+	}
+}

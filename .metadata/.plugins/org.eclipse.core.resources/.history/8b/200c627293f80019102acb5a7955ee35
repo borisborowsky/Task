@@ -1,0 +1,10 @@
+package com.company.books;
+
+import org.hibernate.search.FullTextSession;
+
+public class dadafas {
+	public static void main (String[] args) {
+		FullTextSession fullTextSession = Search.getFullTextSession(session);
+        fullTextSession.createIndexer().startAndWait();
+	}
+}

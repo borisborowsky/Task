@@ -1,0 +1,8 @@
+package com.company.users;
+
+public interface Administrator {
+	void addMember(Member member);
+	void removeMember(Member member);
+	void blockMember(Member member);
+	void unblockMember(Member member);
+}

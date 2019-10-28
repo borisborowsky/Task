@@ -1,0 +1,99 @@
+package com.company.catalogue;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.Query;
+import org.hibernate.search.FullTextSession;
+import org.hibernate.search.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
+
+import com.company.catalogue.BookUnit.BookStatus;
+import com.company.users.Member;
+import com.company.users.Person.Gender;
+import com.company.utils.HibernateUtils;
+import com.company.exception.RetriveResourceException;;
+
+
+
+public class CatalogService {
+	public List<BookUnit> search(BookUnit book) throws RetriveResourceException {
+		List<BookUnit> books = new ArrayList<>();
+		System.out.println(book);
+		Transaction transaction = null;
+		
+		try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+			transaction = session.beginTransaction();
+		    Criteria criteria = session.createCriteria(BookUnit.class);
+		    
+		    if (!book.getAuthour().equals(""))
+		    	criteria.add(Restrictions.eq("authour", book.getAuthour()));
+		    if (!book.getTitle().equals(""))
+		    	criteria.add(Restrictions.eq("title", book.getTitle()));
+		    if (!book.getSubject().equals(""))
+		    	criteria.add(Restrictions.eq("subject", book.getSubject()));
+		    if (!book.getType().equals(""))
+		    	criteria.add(Restrictions.eq("type", book.getType()));
+		    
+		    books =  criteria.list();
+	
+			transaction.commit();
+			session.close();
+
+		} catch (HibernateException e) {
+			if (transaction != null)
+				transaction.rollback();
+			
+			e.printStackTrace();
+			throw new RetriveResourceException("Cannot retrive resource from database : ",e);
+		} 	
+		System.out.println(books.size());
+		return books;
+	}
+	
+	
+	public BookUnit borrowBook(int userId, int bookId) throws RetriveResourceException {
+		Transaction transaction = null;
+		Member member = null;
+		BookUnit book = null;
+		
+		try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+			transaction = session.beginTransaction();
+			
+			member = session.get(Member.class, userId);
+			
+			book = session.get(BookUnit.class, bookId);
+			
+			System.out.println(member + "Member");
+			System.out.println(book + "Book");
+			
+			book.setMember(member);
+			book.setBookStatus(BookStatus.TAKEN);
+			member.getBorrowedBoooks().add(book);
+			
+			session.save(book);
+			session.save(member);
+			
+			
+			transaction.commit();
+			session.close();
+		} catch (Exception e) {
+			if (transaction != null)
+				transaction.rollback();
+			throw new RetriveResourceException("Cannot retrive resource from database : " 
+					+ member + "\n" + book, e);
+		}
+		return book;
+	}
+
+}
+

@@ -1,0 +1,35 @@
+package com.company.library;
+
+public class Employee extends Person implements Bibliothecary {
+	
+	@Override
+	public boolean addBook(Book bookUnit) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean addMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean removeMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean blockMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean unBlockMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+}

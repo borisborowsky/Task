@@ -1,0 +1,15 @@
+package com.company.app.data;
+
+import java.util.Date;
+
+public class BookUnit {
+	private final String title;
+	private final String type;
+	private final String subject;
+	private final String authour;
+	private final Date publishDate;
+	private final int id;
+	private final double borrowPrice;
+	
+	BookUnit()
+}

@@ -1,0 +1,25 @@
+package com.company.resource;
+import java.util.Objects;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import com.company.core.Member;
+import com.google.gson.Gson;
+
+@Path("members")
+public class UserResource {
+	@POST
+	@Path("member")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Member createMember(String json) {
+		System.out.println(json + " JSON");
+		Member member = new Gson().fromJson(json, Member.class);
+		new UserRepository().createMember(Objects.requireNonNull(member));
+		return member;
+	}
+}

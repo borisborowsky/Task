@@ -1,0 +1,14 @@
+package com.company.exception;
+
+public class RetriveResourceException2 extends Exception {
+	  public RetriveResourceException2() { super(); }
+	  public RetriveResourceException2(String message) { 
+		  super(message); 
+	  }
+	  public RetriveResourceException2(String message, Throwable cause) { 
+		  super(message, cause);
+      }
+	  public RetriveResourceException2(Throwable cause) {
+		  super(cause); 
+      }
+}

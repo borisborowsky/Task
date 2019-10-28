@@ -1,0 +1,5 @@
+package com.company.app.exception;
+
+public class TokenExeeption {
+
+}

@@ -1,0 +1,82 @@
+package com.company.core;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import com.company.orders.Fine;
+
+
+@Entity
+@Table(name="member_tbl")
+public class Member extends Person implements Customer {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private final int id;
+	@Embedded
+	private final Account account;
+	
+	@OneToMany
+	private final List<BookUnit> borrowedBoooks;
+
+	
+	Member(String name, String phone, String country,
+			String city, String postCode, Gender gender, String username, 
+			String password) {
+		super(name, phone, country, city, postCode, gender);
+		this.account = new Account(username, password);
+		this.borrowedBoooks = new ArrayList<>();
+		id = 0;
+	}
+
+	@Override
+	public void returnBook(Book book) {
+	
+	}
+	
+	@Override
+	public boolean renewBook(Book book) {
+		return false;
+	}
+
+	@Override
+	public boolean borrowBook(Book book) {
+		return false;
+	}
+	
+
+	@Override
+	public Fine checkForFine(Customer customer) {
+		return null;
+	}
+	
+    List<BookUnit> getBorrowedBooks() {
+    	return borrowedBoooks;
+    }
+	
+	private static class Account {
+		enum AccountStatus { ACTIVE, CLOSED, BLACKLISTED ,NONE }
+		private String username;
+		private String password;
+		
+		@Enumerated(EnumType.STRING)
+		private AccountStatus status;
+		
+		Account() {}
+		
+		Account(String username, String password) {
+			this.username = username;
+			this.password = password;
+			status = AccountStatus.ACTIVE;
+		}
+	}
+}

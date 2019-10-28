@@ -1,0 +1,36 @@
+package com.company.users;
+import java.security.Principal;
+import java.util.Objects;
+
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+
+import com.company.books.BookUnit;
+import com.google.gson.Gson;
+
+
+@Path("books")
+public class BookResource {
+	@Context
+	SecurityContext securityContext;
+	
+	@POST
+	@Path("book")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public BookUnit createMember(String json) {
+
+		System.out.println(json + " JSON");
+		
+		BookUnit book = new Gson().fromJson(json, BookUnit.class);
+		new UserService().addBook(Objects.requireNonNull(book));
+		return book;
+	}
+
+}

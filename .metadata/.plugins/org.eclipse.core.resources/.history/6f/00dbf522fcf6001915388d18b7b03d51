@@ -1,0 +1,10 @@
+package com.company.authentication;
+
+import java.io.Serializable;
+
+class Credentials implements Serializable {
+	private String username;
+	private String password;
+	
+	
+}

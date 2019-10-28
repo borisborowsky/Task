@@ -1,0 +1,32 @@
+package com.company.resource;
+
+import java.util.Objects;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+import com.company.core.Customer;
+import com.company.core.DBSession;
+import com.company.core.Member;
+import com.company.core.MemberDb;
+import com.company.utils.HibernateUtil;
+
+
+public class UserRepository {
+
+	void createMember(Member member) {
+		Transaction transaction = null;
+		
+		try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+			session.save(Objects.requireNonNull(member));  
+			transaction.commit();
+			session.close();
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+		}
+		
+	}
+}

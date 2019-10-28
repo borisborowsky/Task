@@ -1,0 +1,9 @@
+package com.company.library;
+
+class Author {
+	private final String name;
+	
+	Author(String name) {
+		this.name = name;
+	}
+}

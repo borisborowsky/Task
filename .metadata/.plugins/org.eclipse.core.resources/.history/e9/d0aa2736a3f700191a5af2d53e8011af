@@ -1,0 +1,71 @@
+package com.company.users;
+
+import java.util.Objects;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+import com.company.cart.Bibliothecary;
+import com.company.cart.Book;
+import com.company.cart.Fine;
+import com.company.utils.HibernateUtil;
+
+
+public class UserService implements Bibliothecary {
+
+	@Override
+	public void addMember(Member member) {
+		Transaction transaction = null;
+		
+		try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+			transaction = session.beginTransaction();
+			session.save(Objects.requireNonNull(member));  
+			transaction.commit();
+			session.close();
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public boolean addBook(Book book) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean removeBook(Book book) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+
+
+	@Override
+	public boolean removeMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean blockMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean unBlockMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean addMember(Customer customer) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+}
