@@ -3,6 +3,7 @@ package com.company.catalogue;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -28,7 +29,7 @@ public class CatalogResource {
 	@Path("borrow/{userId}/{bookId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	private BookUnit search(@PathParam("userId") int userId, @PathParam("bookId") int bookId) {
+	public BookUnit borrowBook(@PathParam("userId") int userId, @PathParam("bookId") int bookId) {
 		BookUnit book = null;
 		try {
 			book = new CatalogService().borrowBook(userId, bookId);
@@ -43,7 +44,7 @@ public class CatalogResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@Secured
-	private List<BookUnit> search(String json) {
+	public List<BookUnit> search(String json) {
 		List<BookUnit> books = new ArrayList<>();
 		BookUnit book = new Gson().fromJson(json, BookUnit.class);
 		Principal principal = securityContext.getUserPrincipal();
@@ -57,11 +58,13 @@ public class CatalogResource {
 		return books;
 	}
 	
+	
+	
 	@GET
 	@Path("search/borrowed/{userId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	private List<BookUnit> getBorrowedBooks(@PathParam("userId") int userId) {
+	public List<BookUnit> getBorrowedBooks(@PathParam("userId") int userId) {
 		List<BookUnit> books = null;
 		try {
 			books = new CatalogService().getBorrowedBooks(userId);

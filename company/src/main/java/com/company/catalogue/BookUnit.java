@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Objects;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -43,9 +44,12 @@ public final class BookUnit extends Book {
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	private final double borrowPrice;
 	
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private boolean isThereFineOnTheBook;
 	
 	@ContainedIn
 	@ManyToOne
+	@JsonbTransient
 	@JoinColumn(name = "member_id")
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	@FieldBridge(impl = IntegerBridge.class)
@@ -67,6 +71,7 @@ public final class BookUnit extends Book {
 		borrowDate = new Date();
 		returnDate = new Date();
 		bookStatus = null;
+		isThereFineOnTheBook = false;
 	}
 
 	
@@ -83,6 +88,7 @@ public final class BookUnit extends Book {
 		this.returnDate = new Date();
 		this.borrowPrice = borrowPrice;
 		bookStatus = BookStatus.TAKEN;
+		this.isThereFineOnTheBook = false;
 	}
 
 
@@ -145,6 +151,17 @@ public final class BookUnit extends Book {
 		return borrowPrice;
 	}
 
+	
+	
+	public boolean isThereFineOnTheBook() {
+		return isThereFineOnTheBook;
+	}
+
+
+	public void setThereFineOnTheBook(boolean isThereFineOnTheBook) {
+		this.isThereFineOnTheBook = isThereFineOnTheBook;
+	}
+
 
 	@Override
 	public int hashCode() {
@@ -156,6 +173,7 @@ public final class BookUnit extends Book {
 		temp = Double.doubleToLongBits(borrowPrice);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + id;
+		result = prime * result + (isThereFineOnTheBook ? 1231 : 1237);
 		result = prime * result + ((member == null) ? 0 : member.hashCode());
 		result = prime * result + ((returnDate == null) ? 0 : returnDate.hashCode());
 		return result;
@@ -182,6 +200,8 @@ public final class BookUnit extends Book {
 			return false;
 		if (id != other.id)
 			return false;
+		if (isThereFineOnTheBook != other.isThereFineOnTheBook)
+			return false;
 		if (member == null) {
 			if (other.member != null)
 				return false;
@@ -195,6 +215,9 @@ public final class BookUnit extends Book {
 		return true;
 	}
 
+
+	
+	
 //	@Override
 //	public String toString() {
 //		return "BookUnit [id=" + id + ", borrowPrice=" + borrowPrice + ", member=" + member + ", borrowDate="

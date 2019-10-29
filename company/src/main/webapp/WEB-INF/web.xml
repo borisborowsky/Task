@@ -9,10 +9,7 @@
             <param-name>jersey.config.server.provider.packages</param-name>
             <param-value>com.company</param-value>
         </init-param>
-    	  <init-param>
-    <param-name>org.glassfish.jersey.config.property.packages</param-name>
-    <param-value>com.company.books</param-value>
-    </init-param>
+    	
         <init-param>
     		<param-name>org.glassfish.jersey.spi.container.ContainerRequestFilters</param-name>
     		<param-value>com.company.AuthenticationFilter</param-value>
@@ -26,7 +23,7 @@
     </servlet-mapping>
     <listener>
     <listener-class>
-      com.company.listener.AppServletContextListener
+      	com.company.listener.AppServletContextListener
     </listener-class>
   </listener>
 </web-app>

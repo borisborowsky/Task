@@ -9,6 +9,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
@@ -30,7 +32,8 @@ import javax.swing.border.TitledBorder;
 import org.apache.catalina.Container;
 import org.hibernate.mapping.Component;
 
-import com.company.app.data.BookView;
+import com.company.app.data.BookUnit;
+
 
 public class FComponent {
 	
@@ -64,8 +67,8 @@ public class FComponent {
 		return jComboBox;
 	}
 	
-	public static JList<BookView> getJList(JFrame jFrame, MouseListener mouseListener, Vector<BookView> model, int x, int y) {
-		JList<BookView> jlist = new JList<BookView>(model);
+	public static JList<BookUnit> getJList(JFrame jFrame, MouseListener mouseListener, Vector<BookUnit> model, int x, int y) {
+		JList<BookUnit> jlist = new JList<BookUnit>(model);
 		jlist.setSize(200, 250);
 		jlist.setLocation(x, y);
 		jlist.addMouseListener(mouseListener);
@@ -137,7 +140,7 @@ public class FComponent {
 		}
 	}
 	
-	public static JDialog getJDialog(BookView bookView) {
+	public static JDialog getJDialog(BookUnit bookView) {
 		JPanel jPanel = new JPanel();
 		JDialog jDialog = new JDialog();
 		jPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -172,5 +175,19 @@ public class FComponent {
 	public static void addToJPanel(JPanel jPanel, JLabel jLabel) {
 		jPanel.add(jLabel);
 	}	
+	
+	
+	public static Date convertDate(JComboBox cbYear, JComboBox cbMonth, JComboBox cbDay) {
+		String year = (String) cbYear.getSelectedItem();
+		String month = (String) cbMonth.getSelectedItem();
+		String day = (String) cbDay.getSelectedItem();
+		StringBuilder sb = new StringBuilder(year).append("-").append(month).append("-")
+				.append(day);
+		
+		LocalDate localDate = LocalDate.parse(sb.toString());
+		Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		return date;
+	}
+	
 
 }

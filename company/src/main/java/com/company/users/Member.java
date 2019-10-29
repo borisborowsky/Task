@@ -47,9 +47,11 @@ public class Member extends Person {
 	@FieldBridge(impl = IntegerBridge.class)
 	private final List<BookUnit> borrowedBooks;
 
-	@IndexedEmbedded
+//	@IndexedEmbedded
+	@ContainedIn
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
 	@LazyCollection(LazyCollectionOption.FALSE)
+	@FieldBridge(impl = IntegerBridge.class)
 	private final List<Fine> fines;
 
 	public Member() {
@@ -86,7 +88,7 @@ public class Member extends Person {
 		public Account() {
 			username = "";
 			password = "";
-			token = "";
+			token = null;
 			status = AccountStatus.NONE;
 		}
 

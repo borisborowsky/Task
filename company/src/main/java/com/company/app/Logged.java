@@ -1,14 +1,15 @@
 package com.company.app;
 
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -20,7 +21,9 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.ws.rs.core.HttpHeaders;
@@ -34,22 +37,26 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-import com.company.app.data.BookView;
+import com.company.app.data.BookUnit;
+import com.company.app.data.Fine;
+import com.company.app.data.BookUnit.BookStatus;
 import com.company.app.utils.FComponent;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class Logged extends JFrame {
-	private static final long serialVersionUID = 1L;
 	private final static Logger LOGGER = Logger.getLogger(Logged.class.getName());
+	
+	private static final long serialVersionUID = 1L;
+	private static final String FINE_CHECK_ENDPOINT = "http://localhost:8080/company/webapi/members/member/fines/";
 	private static final String URL_ENDPOINT_CATALOG = "http://localhost:8080/company/webapi/catalog/search/";
 	private static final String URL_ENDPOINT_BORROW = "http://localhost:8080/company/webapi/catalog/borrow/";
 	private static final String URL_ENDPOINT_SEARCH_BOOK_TAKEN_BY_USER = "http://localhost:8080/company/webapi/catalog/search/borrowed/";
-	
-	private final Vector<BookView> bookListView;
-	private final Vector<BookView> searchListView;
-	private final JList<BookView> bookList;
-	private final JList<BookView> searchList;
+
+	private final Vector<BookUnit> bookListView;
+	private final Vector<BookUnit> searchListView;
+	private final JList<BookUnit> bookList;
+	private final JList<BookUnit> searchList;
 	private final List<JTextField> fieldList;
 	private final Container c;
 
@@ -58,7 +65,9 @@ public class Logged extends JFrame {
 	private final JTextField tSubject;
 	private final JTextField tTitle;
 	private final JTextField tType;
-
+	
+	private final JTextArea txtBookInfo;
+	
 	private final JComboBox cbYear;
 	private final JComboBox cbMonth;
 	private final JComboBox cbDates;
@@ -75,10 +84,9 @@ public class Logged extends JFrame {
 	public Logged() {
 		setTitle("Logged Frame");
 		setBounds(300, 90, 900, 600);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
 
-		
 		Handler handlerObj = new ConsoleHandler();
 		handlerObj.setLevel(Level.ALL);
 		LOGGER.addHandler(handlerObj);
@@ -87,28 +95,35 @@ public class Logged extends JFrame {
 		searchListView = new Vector();
 		bookListView = new Vector();
 		fieldList = new ArrayList<>();
-
+		
+		new Notify().execute();
+		
 		bookList = FComponent.getJList(this, new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				BookView bookItem = (BookView) bookList.getSelectedValue();
-
-				FComponent.getJDialog(bookItem).setVisible(true);
+				BookUnit bookItem = (BookUnit) bookList.getSelectedValue();
+				txtBookInfo.setText("");
+				txtBookInfo.setText(bookItem.createView());
 			}
 		}, bookListView, 450, 50);
-		
+
 		searchList = FComponent.getJList(this, new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				BookView bookItem = (BookView) searchList.getSelectedValue();
-
-				FComponent.getJDialog(bookItem).setVisible(true);
+				BookUnit bookItem = (BookUnit) searchList.getSelectedValue();
+				txtBookInfo.setText("");
+				txtBookInfo.setText(bookItem.createView());	
 			}
 		}, searchListView, 670, 50);
-	
+		
+		
+		txtBookInfo = FComponent.getJTextArea(this, 13, 200, 150, 550, 340);
+		FComponent.getJLabel(this, "Book description:", 20, 200, 20, 550, 310);
+		
 		// Labels
 		FComponent.getJLabel(this, "Result from catalog:", 20, 200, 20, 670, 10);
 		FComponent.getJLabel(this, "Your Books' result:", 20, 200, 20, 450, 10);
+
 		FComponent.getJLabel(this, "Author", 15, 100, 20, 50, 250);
 		FComponent.getJLabel(this, "Publish Date", 15, 100, 20, 50, 100);
 		FComponent.getJLabel(this, "Borrow Price", 15, 100, 20, 50, 300);
@@ -130,15 +145,15 @@ public class Logged extends JFrame {
 		btnSearch = FComponent.getJButton(this, "Search", 15, 100, 20, 530, 540, a -> {
 			bookListView.clear();
 			bookList.updateUI();
-			BookView book = createBook(fieldList);
-			String json = book.createJsonString();
+			BookUnit book = createBook(fieldList);
+			String json = new Gson().toJson(book);
 
 			System.out.println(json);
 			new Search(json).execute();
 		});
 
 		btnBorrow = FComponent.getJButton(this, "Borrow", 15, 100, 20, 390, 540, a -> {
-			BookView book = bookList.getSelectedValue();
+			BookUnit book = bookList.getSelectedValue();
 			System.out.println(App.getUserId() + " User id in Logged");
 			new BookBorrow(book.getId()).execute();
 		});
@@ -146,7 +161,7 @@ public class Logged extends JFrame {
 		btnTaken = FComponent.getJButton(this, "Your books", 15, 100, 20, 240, 540, a -> {
 			new UserCatalogue().execute();
 		});
-
+	
 		c = getContentPane();
 
 		c.setLayout(null);
@@ -154,16 +169,19 @@ public class Logged extends JFrame {
 		setVisible(true);
 	}
 
-//	public BookView(String title, String type, String subject, String authour,
-//			String publishDate, double borrowPrice, String bookStatus) {
-//	
-	private BookView createBook(List<JTextField> list) {
-
-		return new BookView(0, tTitle.getText(), tType.getText(), tSubject.getText(), tAuthour.getText(), "2009-09-22",
-				3213.2, "AVAILABLE");
+	private BookUnit createBook(List<JTextField> list) {
+		Date date = FComponent.convertDate(cbYear, cbMonth, cbDates);
+		
+		double borrowPrice = 0;
+		
+		if (!tBorrowPrice.getText().isEmpty())
+			borrowPrice = Double.parseDouble(tBorrowPrice.getText());
+		
+		return new BookUnit(App.getUserId(), tTitle.getText(), tType.getText(), tSubject.getText(), tAuthour.getText(),
+				date, new Date(), borrowPrice, BookStatus.AVAILABLE);
 	}
 
-	public class Search extends SwingWorker<List<BookView>, Void> {
+	public class Search extends SwingWorker<List<BookUnit>, Void> {
 		private String JSON_STRING = "";
 
 		public Search(String JSON_STRING) {
@@ -172,8 +190,8 @@ public class Logged extends JFrame {
 		}
 
 		@Override
-		protected List<BookView> doInBackground() {
-			List<BookView> result = null;
+		protected List<BookUnit> doInBackground() {
+			List<BookUnit> result = null;
 			try {
 				result = search(JSON_STRING);
 				// TODO catch custom exception
@@ -184,8 +202,8 @@ public class Logged extends JFrame {
 			return result;
 		}
 
-		private List<BookView> search(String JSON_STRING) throws RuntimeException, IOException {
-			List<BookView> result = null;
+		private List<BookUnit> search(String JSON_STRING) throws RuntimeException, IOException {
+			List<BookUnit> result = null;
 			CloseableHttpClient httpClient = null;
 
 			httpClient = HttpClients.createDefault();
@@ -209,7 +227,7 @@ public class Logged extends JFrame {
 				}
 
 				BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
-				result = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<BookView>>() {
+				result = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<BookUnit>>() {
 				}.getType());
 
 				for (int i = 0; i < result.size(); i++)
@@ -228,7 +246,7 @@ public class Logged extends JFrame {
 		@Override
 		protected void done() {
 			try {
-				List<BookView> list = get();
+				List<BookUnit> list = get();
 				System.out.println(get().size() + " in get");
 				bookListView.addAll(list);
 				bookList.updateUI();
@@ -240,21 +258,20 @@ public class Logged extends JFrame {
 		}
 	}
 
-	private class BookBorrow extends SwingWorker<BookView, Void> {
+	private class BookBorrow extends SwingWorker<Void, Void> {
 		private int bookId;
 
 		public BookBorrow(int bookId) {
 			this.bookId = bookId;
 		}
-		
-		private BookView borrowBook() throws IOException {
-			BookView book = null;
+
+		private void borrowBook() throws IOException {
 			CloseableHttpClient httpClient = null;
 			try {
 				String userId = String.valueOf(App.getUserId());
 
-				String query = new StringBuilder(URL_ENDPOINT_BORROW).append("/").append(userId).append("/")
-						.append(bookId).toString();
+				String query = new StringBuilder(URL_ENDPOINT_BORROW).append(userId).append("/").append(bookId)
+						.toString();
 
 				System.out.println(query + " QUERY");
 				httpClient = HttpClients.createDefault();
@@ -277,9 +294,6 @@ public class Logged extends JFrame {
 				System.out.println("Response from server: \n");
 				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 				System.out.println(br.readLine());
-				book = new Gson().fromJson(br.readLine(), BookView.class);
-				System.out.println(book + " boorow book");
-				System.out.println(book.toString());
 			} catch (IOException e) {
 				Thread.currentThread().interrupt();
 				e.printStackTrace();
@@ -287,39 +301,111 @@ public class Logged extends JFrame {
 				if (httpClient != null)
 					httpClient.close();
 			}
-
-			return book;
 		}
 
-	
-		@Override
-		protected void done() {
-			BookView book = null;
-			try {
-				book = get();
-			} catch (InterruptedException | ExecutionException e) {
 
-				e.printStackTrace();
-			}
-			
-		}
+//		protected void done() {
+////			BookUnit book = null;
+////			try {
+////				book = get();
+////			} catch (InterruptedException | ExecutionException e) {
+////
+////				e.printStackTrace();
+////			}
+//
+//		}
 
 		@Override
-		protected BookView doInBackground() throws Exception {
-			return borrowBook();
+		protected Void doInBackground() throws Exception {
+			borrowBook();
+			return null;
 		}
 	}
 	
-	private class UserCatalogue extends SwingWorker<List<BookView>, Void> {		
-		private List<BookView> searchTakenBooks() throws IOException {
-			List<BookView> books = null;
+	
+	/**
+	 * 
+	 * @This SwingWorker class make a request to the server for
+	 * the current logged user to check if it have a fines. 
+	 * If a fine's are found the user is notified.
+	 *
+	 */
+	private class Notify extends SwingWorker<List<Fine>, Void> {
+		private List<Fine> checkForFines() throws IOException {
+			CloseableHttpClient httpClient = null;
+			List<Fine> fines = null;
+			try {
+				String userId = String.valueOf(App.getUserId());
+
+				String query = new StringBuilder(FINE_CHECK_ENDPOINT).append(userId)
+						.toString();
+
+				System.out.println(query + " QUERY");
+				httpClient = HttpClients.createDefault();
+				HttpGet httpGet = new HttpGet(query);
+
+				httpGet.setHeader(HttpHeaders.AUTHORIZATION, App.getToken());
+				CloseableHttpResponse response = null;
+				try {
+					response = httpClient.execute(httpGet);
+
+					if (response.getStatusLine().getStatusCode() != 200) {
+						throw new RuntimeException(
+								"Failed : Http error code " + response.getStatusLine().getStatusCode());
+					}
+				} catch (RuntimeException e) {
+					LOGGER.log(Level.SEVERE, e.toString(), e);
+					e.printStackTrace();
+				}
+
+				System.out.println("Response from server: \n");
+				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+				fines = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<Fine>>() {
+				}.getType());
+			} catch (IOException e) {
+				Thread.currentThread().interrupt();
+				e.printStackTrace();
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+			}
+			return fines;
+		}
+//		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+//        // Set location of the window to center.
+//        chooseDataSetDialog.getDialog()
+//        .setLocation(dimension.width/2-machineLearningPanel.getSize().width/2, 
+//        		dimension.height/2-machineLearningPanel.getSize().height/2);
+		@Override
+		protected void done() {
+			List<Fine> fines = null;
+			try {
+				fines = get();
+				System.out.println(fines.get(0));
+				new FinePanel(fines).setVisible(true);
+			} catch (InterruptedException | ExecutionException e) {
+				Thread.currentThread().interrupt();
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		protected List<Fine> doInBackground() throws Exception {
+			List<Fine> fines = null;
+			fines = checkForFines();
+			return fines;
+		}
+	}
+
+	private class UserCatalogue extends SwingWorker<List<BookUnit>, Void> {
+		private List<BookUnit> searchTakenBooks() throws IOException {
+			List<BookUnit> books = null;
 			CloseableHttpClient httpClient = null;
 			try {
 				String userId = String.valueOf(App.getUserId());
 
-				String query = new StringBuilder(URL_ENDPOINT_SEARCH_BOOK_TAKEN_BY_USER)
-						.append("/").append(userId).toString();
-				
+				String query = new StringBuilder(URL_ENDPOINT_SEARCH_BOOK_TAKEN_BY_USER).append(userId).toString();
+
 				System.out.println(query + " QUERY");
 				httpClient = HttpClients.createDefault();
 				HttpGet httpGet = new HttpGet(query);
@@ -341,9 +427,9 @@ public class Logged extends JFrame {
 				System.out.println("Response from server: \n");
 				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
-				books = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<BookView>>() {
+				books = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<BookUnit>>() {
 				}.getType());
-				
+
 				System.out.println(books.toString());
 			} catch (IOException e) {
 				Thread.currentThread().interrupt();
@@ -356,10 +442,9 @@ public class Logged extends JFrame {
 			return books;
 		}
 
-	
 		@Override
 		protected void done() {
-			List<BookView> books = null;
+			List<BookUnit> books = null;
 			try {
 				System.out.println(get());
 				books = get();
@@ -373,14 +458,12 @@ public class Logged extends JFrame {
 		}
 
 		@Override
-		protected List<BookView> doInBackground() throws Exception {
+		protected List<BookUnit> doInBackground() throws Exception {
 			return searchTakenBooks();
 		}
 	}
-	
 
-
-	final private String dates[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
+	final private String dates[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15",
 			"16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
 	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
 	final private String years[] = { "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004",

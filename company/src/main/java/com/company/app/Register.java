@@ -1,27 +1,22 @@
 package com.company.app;
 
-import javax.swing.*;
-
-import com.company.app.data.MemberView;
-import com.company.app.utils.FComponent;
-import com.company.users.Member;
-import com.company.users.Person.Gender;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,12 +25,13 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.json.JSONArray;
+
+import com.company.app.data.MemberView;
+import com.company.app.utils.FComponent;
 
 public class Register extends JFrame {
-
+	private static final long serialVersionUID = 1L;
+	
 	private Container container;
 	private JTextField tName;
 	private JLabel mno;
@@ -60,7 +56,6 @@ public class Register extends JFrame {
 	private JTextField tPostalCode;
 	private JTextField tGender;
 	private JTextField tMobile;
-	private final String[] bulgarianCities = { "Varna", "Bourgas", "Sofia", "Plovdiv" };
 	private MemberView member;
 
 	// constructor, to initialize the components
@@ -68,7 +63,7 @@ public class Register extends JFrame {
 	public Register() {
 		setTitle("Registration Form");
 		setBounds(300, 90, 900, 600);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
 
 		container = getContentPane();
@@ -109,14 +104,15 @@ public class Register extends JFrame {
 		sub = FComponent.getJButton(this, "Submit", 15, 100, 20, 530, 540, (ActionListener) arg0 -> {
             String gender = "";
             if (male.isSelected())
-                gender = "Male";
+                gender = "MALE";
             else
-                gender = "Female";
-
+                gender = "FEMALE";
+            
             member = new MemberView(gender, tName.getText(), tMobile.getText(),
                     (String) cbCountry.getSelectedItem(), (String) cbCity.getSelectedItem(), tPostalCode.getText(),
                     tUsername.getText(), tPassword.getText(), "ACTIVE");
             String JSON_STRING = member.toString();
+            System.out.println(JSON_STRING);
             new PostForm(JSON_STRING).execute();
         });
 		
@@ -185,6 +181,7 @@ public class Register extends JFrame {
 		 protected void done() {
 		       
 		 }
-
 	}
+	
+	private final String[] bulgarianCities = { "Varna", "Bourgas", "Sofia", "Plovdiv", "Montana", "Vraca", "Haskovo", "Veliko Turnovo",  };
 }

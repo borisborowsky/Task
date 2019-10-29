@@ -1,10 +1,18 @@
 package com.company.catalogue;
 
+import java.util.List;
 import java.util.Objects;
 
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import com.company.exception.RetriveResourceException;
 import com.company.utils.HibernateUtils;
 
 public class BookService implements ManageBook {
@@ -26,7 +34,7 @@ public class BookService implements ManageBook {
 		}
 
 	}
-	
+
 	@Override
 	public void removeBook(int id) {
 		Transaction transaction = null;
@@ -51,6 +59,27 @@ public class BookService implements ManageBook {
 			e.printStackTrace();
 		}
 
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public List<BookUnit> fetchAllBooks() throws RetriveResourceException {
+		Transaction transaction = null;
+		List<BookUnit> books = null;
+
+		try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+			transaction = session.beginTransaction();
+
+			books = session.createCriteria(BookUnit.class).list();
+			transaction.commit();
+			session.close();
+		} catch (Exception e) {
+			if (transaction != null) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+		}
+		return books;
 	}
 
 }

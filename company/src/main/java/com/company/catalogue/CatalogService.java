@@ -1,12 +1,10 @@
 package com.company.catalogue;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -19,10 +17,9 @@ import org.hibernate.search.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
 
 import com.company.catalogue.BookUnit.BookStatus;
+import com.company.exception.RetriveResourceException;
 import com.company.users.Member;
-import com.company.users.Person.Gender;
-import com.company.utils.HibernateUtils;
-import com.company.exception.RetriveResourceException;;
+import com.company.utils.HibernateUtils;;
 
 
 
@@ -45,6 +42,8 @@ public class CatalogService implements Searchable {
 		    	criteria.add(Restrictions.eq("subject", book.getSubject()));
 		    if (!book.getType().equals(""))
 		    	criteria.add(Restrictions.eq("type", book.getType()));
+		    if (!book.getPublishDate().equals("")) 
+		    	criteria.add(Restrictions.eq("publishDate", book.getPublishDate()));
 		    
 		    books =  criteria.list();
 	
@@ -79,9 +78,12 @@ public class CatalogService implements Searchable {
 			System.out.println(book + "Book");
 		
 			book.setMember(member);
+			
+			LocalDate ld = LocalDate.now().plusMonths(1);
+			Date date = Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			book.setBorrowDate(new Date());
+			book.setReturnDate(date);
 			book.setBookStatus(BookStatus.TAKEN);
-			
-			
 			
 			member.getBorrowedBoooks().add(book);
 			

@@ -22,8 +22,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-
-import com.company.app.data.BookView;
 import com.company.app.utils.FComponent;
 import com.company.catalogue.BookUnit;
 
@@ -39,7 +37,7 @@ public class BookPanel extends JFrame {
 
 		setTitle("Searching");
 		setBounds(300, 90, 300, 300);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
 
 		FComponent.getJLabel(this, "Manage Books", 30, 300, 30, 300, 30);

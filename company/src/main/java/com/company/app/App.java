@@ -1,21 +1,13 @@
 package com.company.app;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.ConsoleHandler;
@@ -26,8 +18,6 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -43,11 +33,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
 
 import com.company.app.data.Credentials;
 import com.company.app.exception.TokenException;
@@ -65,22 +50,33 @@ public final class App extends JFrame implements Runnable {
 	private JLabel loadingLbl;
 	private JLabel labelLoadingProcess;
 	private Logged loggedUserView;
+	
+	private final JButton btnRegister = getButton(e -> new Register().setVisible(true), "Register");
+	private final JButton btnAdmin = getButton((ActionListener) e -> {
+        new Administrator().setVisible(true);
+        
+    }, "Admin");
 
-	private final JButton buttonLogin = getButton((ActionListener) e -> {
+	private final JButton btnLogin = getButton((ActionListener) e -> {
         String password = fieldPassword.getText();
         String username = textUsername.getText();
         loadingLbl.setVisible(true);
         Authenticate authenticate = new Authenticate(username, password);
         authenticate.execute();
- 
-
+        visibilityOfComponent(btnAdmin, btnRegister, labelUsername, labelPassword,
+        		textUsername, fieldPassword, false);
     }, "Login");
+		
+	private void visibilityOfComponent(JButton btnAdmin, JButton buttonRegister,
+			JLabel label1, JLabel label2, JTextField txtField, JPasswordField passField, boolean param) {
+		btnAdmin.setVisible(param);
+		buttonRegister.setVisible(param);
+		label1.setVisible(param);
+		label2.setVisible(param);
+		txtField.setVisible(param);
+		passField.setVisible(param);
+	}
 	
-	private final JButton btnAdmin = getButton((ActionListener) e -> {
-        new Administrator().setVisible(true);;
-    }, "Admin");
-	
-	private final JButton buttonRegister = getButton(e -> new Register().setVisible(true), "Register");
 
 	private JLabel getLoadingLbl() {
 		ClassLoader classLoader = getClass().getClassLoader();
@@ -111,6 +107,7 @@ public final class App extends JFrame implements Runnable {
 		private String password = "";
 
 		Authenticate(String username, String password) {
+			btnLogin.setVisible(false);
 			this.username = username;
 			this.password = password;
 		
@@ -147,6 +144,7 @@ public final class App extends JFrame implements Runnable {
 						throw new TokenException("Could not retrieve a valid token from server response");
 				
 					userId = Integer.parseInt(token.substring(token.length() - 1));
+					System.out.println(userId + " user id");
 				
 				}
 
@@ -179,6 +177,9 @@ public final class App extends JFrame implements Runnable {
 				token = get();
 				System.out.println(token + " Token in gui");
 				loadingLbl.setVisible(false);
+				visibilityOfComponent(btnAdmin, btnRegister, labelUsername, labelPassword,
+		        		textUsername, fieldPassword, true);
+				btnLogin.setVisible(true);
 				new Logged().setVisible(true);
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
@@ -237,13 +238,13 @@ public final class App extends JFrame implements Runnable {
 		constraints.gridy = 2;
 		constraints.gridwidth = 2;
 		constraints.anchor = GridBagConstraints.WEST;
-		loginPanel.add(buttonLogin, constraints);
+		loginPanel.add(btnLogin, constraints);
 
 		constraints.gridx = 0;
 		constraints.gridy = 2;
 		constraints.gridwidth = 2;
 		constraints.anchor = GridBagConstraints.EAST;
-		loginPanel.add(buttonRegister, constraints);
+		loginPanel.add(btnRegister, constraints);
 		
 		constraints.gridx = 0;
 		constraints.gridy = 2;
@@ -260,6 +261,8 @@ public final class App extends JFrame implements Runnable {
 
 		return loginPanel;
 	}
+	
+	
 
 	public static String getToken() {
 		return token;
