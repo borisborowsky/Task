@@ -20,7 +20,6 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.bridge.builtin.IntegerBridge;
 
 import com.company.catalogue.BookUnit;
@@ -30,22 +29,22 @@ import com.company.catalogue.Fine;
 @Table(name = "member_tbl")
 @Indexed
 public class Member extends Person {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "member_id")
-	private int id;
-
 	@Embedded
 	private final Account account;
-
-	@Column(insertable = false, updatable = false)
-	private String token;
-
+	
 	@ContainedIn
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
 	@LazyCollection(LazyCollectionOption.FALSE)
 	@FieldBridge(impl = IntegerBridge.class)
 	private final List<BookUnit> borrowedBooks;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "member_id")
+	private int id;
+
+	@Column(insertable = false, updatable = false)
+	private String token;
 
 //	@IndexedEmbedded
 	@ContainedIn
@@ -71,19 +70,17 @@ public class Member extends Person {
 		this.token = token;
 	}
 
-	public List<BookUnit> getBorrowedBooks() {
-		return borrowedBooks;
-	}
 
-	public static class Account {
+    public static class Account {
 		enum AccountStatus { ACTIVE, CLOSED, BLACKLISTED, NONE }
-
-		private final String username;
-		private final String password;
-		private String token;
 
 		@Enumerated(EnumType.STRING)
 		private final AccountStatus status;
+
+		private final String username;
+		private final String password;
+		
+		private String token;
 
 		public Account() {
 			username = "";
@@ -95,7 +92,6 @@ public class Member extends Person {
 		public Account(String username, String password) {
 			this.username = username;
 			this.password = password;
-			this.token = token;
 			this.status = AccountStatus.ACTIVE;
 		}
 
@@ -201,7 +197,7 @@ public class Member extends Person {
 			return false;
 		return true;
 	}
-
+	
 	public List<Fine> getFines() {
 		return fines;
 	}

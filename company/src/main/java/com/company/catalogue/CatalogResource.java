@@ -3,7 +3,6 @@ package com.company.catalogue;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -17,7 +16,6 @@ import javax.ws.rs.core.SecurityContext;
 
 import com.company.authentication.Secured;
 import com.company.exception.RetriveResourceException;
-import com.company.users.UserService;
 import com.google.gson.Gson;
 
 @Path("catalog")
@@ -29,6 +27,7 @@ public class CatalogResource {
 	@Path("borrow/{userId}/{bookId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Secured
 	public BookUnit borrowBook(@PathParam("userId") int userId, @PathParam("bookId") int bookId) {
 		BookUnit book = null;
 		try {
@@ -58,12 +57,12 @@ public class CatalogResource {
 		return books;
 	}
 	
-	
-	
+
 	@GET
 	@Path("search/borrowed/{userId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Secured
 	public List<BookUnit> getBorrowedBooks(@PathParam("userId") int userId) {
 		List<BookUnit> books = null;
 		try {
@@ -73,6 +72,4 @@ public class CatalogResource {
 		}
 		return books;
 	}
-	
-	
 }

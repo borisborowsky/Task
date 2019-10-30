@@ -67,8 +67,8 @@ public class FComponent {
 		return jComboBox;
 	}
 	
-	public static JList<BookUnit> getJList(JFrame jFrame, MouseListener mouseListener, Vector<BookUnit> model, int x, int y) {
-		JList<BookUnit> jlist = new JList<BookUnit>(model);
+	public static JList getJList(JFrame jFrame, MouseListener mouseListener, Vector model, int x, int y) {
+		JList jlist = new JList<>(model);
 		jlist.setSize(200, 250);
 		jlist.setLocation(x, y);
 		jlist.addMouseListener(mouseListener);

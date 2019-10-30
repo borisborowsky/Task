@@ -109,10 +109,5 @@ public abstract class Book {
 		} else if (!type.equals(other.type))
 			return false;
 		return true;
-	}
-
-	
-	
-	
-	
+	}	
 }

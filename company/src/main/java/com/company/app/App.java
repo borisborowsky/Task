@@ -10,10 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -38,7 +34,9 @@ import com.company.app.data.Credentials;
 import com.company.app.exception.TokenException;
 
 public final class App extends JFrame implements Runnable {
-	private static final Logger LOGGER = Logger.getLogger(App.class.getName());
+	private static final String AUTHENTICATION_END_POINT = "http://localhost:8080/company/webapi/authentication";
+	private static int userId;
+	
 	private final JLabel labelUsername = new JLabel("Enter username: ");
 	private final JLabel labelPassword = new JLabel("Enter password: ");
 	private final JTextField textUsername = new JTextField(20);
@@ -46,7 +44,7 @@ public final class App extends JFrame implements Runnable {
 
 	private static String token;
 	
-	private static int userId;
+
 	private JLabel loadingLbl;
 	private JLabel labelLoadingProcess;
 	private Logged loggedUserView;
@@ -81,7 +79,6 @@ public final class App extends JFrame implements Runnable {
 	private JLabel getLoadingLbl() {
 		ClassLoader classLoader = getClass().getClassLoader();
 		ImageIcon loading = new ImageIcon(Objects.requireNonNull(classLoader.getResource("Gif/loader.gif")).getFile());
-		System.out.println(loading);
 		JLabel loadingLbl = new JLabel("Checking Credentials... ", loading, JLabel.CENTER);
 		loadingLbl.setVisible(false);
 		return loadingLbl;
@@ -93,13 +90,6 @@ public final class App extends JFrame implements Runnable {
 		pack();
 		setVisible(true);
 		setLocationRelativeTo(null);
-		
-        Handler handlerObj = new ConsoleHandler();
-        handlerObj.setLevel(Level.ALL);
-        LOGGER.addHandler(handlerObj);
-        LOGGER.setLevel(Level.ALL);
-        LOGGER.setUseParentHandlers(false);
-        LOGGER.log(Level.FINE, "fine");
 	}
 
 	class Authenticate extends SwingWorker<String, Void> {
@@ -115,14 +105,15 @@ public final class App extends JFrame implements Runnable {
 
 		private String login(String username, String password) throws TokenException,
 						RuntimeException, ClientProtocolException, IOException {
-			final String URL = "http://localhost:8080/company/webapi/authentication";
-			final String Credentials_JSON = new Credentials(username, password).toString();
-			System.out.println(Credentials_JSON);
+		
+			final String credentials = new Credentials(username, password).toString();
+			System.out.println(credentials);
+			
 			CloseableHttpClient httpClient = HttpClients.createDefault();
 
-			HttpEntity httpEntity = new StringEntity(Credentials_JSON, ContentType.APPLICATION_JSON);
+			HttpEntity httpEntity = new StringEntity(credentials, ContentType.APPLICATION_JSON);
 
-			HttpPost httpPost = new HttpPost(URL);
+			HttpPost httpPost = new HttpPost(AUTHENTICATION_END_POINT);
 			httpPost.setEntity(httpEntity);
 
 			CloseableHttpResponse response = httpClient.execute(httpPost);
@@ -138,14 +129,13 @@ public final class App extends JFrame implements Runnable {
 
 				try (BufferedReader br = new BufferedReader(
 						new InputStreamReader((response.getEntity().getContent())))) {
-					token = br.readLine();
 					
+					token = br.readLine();
+				
 					if (token.equals(""))
 						throw new TokenException("Could not retrieve a valid token from server response");
 				
-					userId = Integer.parseInt(token.substring(token.length() - 1));
-					System.out.println(userId + " user id");
-				
+					userId = Integer.parseInt(token.substring(token.length() - 1));	
 				}
 
 			} finally {
@@ -158,12 +148,11 @@ public final class App extends JFrame implements Runnable {
 		}
 
 		@Override
-		protected String doInBackground() throws Exception {
+		protected String doInBackground() throws Exception, TokenException {
 			String user = "";
 			try {
 				user = login(username, password);
-			} catch (RuntimeException | ClientProtocolException | TokenException e) {
-				LOGGER.log(Level.SEVERE, e.toString(), e);
+			} catch (RuntimeException | ClientProtocolException e) {
 				e.printStackTrace();
 			}
 			return user;
@@ -171,17 +160,21 @@ public final class App extends JFrame implements Runnable {
 
 		@Override
 		public void done() {
-			
 			try {
 				if (get() == null) return;
+				
 				token = get();
-				System.out.println(token + " Token in gui");
+
 				loadingLbl.setVisible(false);
 				visibilityOfComponent(btnAdmin, btnRegister, labelUsername, labelPassword,
 		        		textUsername, fieldPassword, true);
+				
 				btnLogin.setVisible(true);
+				
 				new Logged().setVisible(true);
+				
 			} catch (InterruptedException | ExecutionException e) {
+				Thread.currentThread().interrupt();
 				e.printStackTrace();
 			}		
 		}
@@ -193,7 +186,7 @@ public final class App extends JFrame implements Runnable {
 		return btn;
 	}
 	
-	public static void addobjects(Component componente, JPanel jPanel, GridBagLayout layout, GridBagConstraints gbc,
+	private static void addobjects(Component componente, JPanel jPanel, GridBagLayout layout, GridBagConstraints gbc,
 			int gridx, int gridy, int gridwidth){
         gbc.gridx = gridx;
         gbc.gridy = gridy;
@@ -252,18 +245,12 @@ public final class App extends JFrame implements Runnable {
 		constraints.anchor = GridBagConstraints.CENTER;
 		loginPanel.add(btnAdmin, constraints);
 		
-		
-		// set border for the panel
 		loginPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Login Panel"));
-
-		// add the panel to this frame
-		this.add(loginPanel);
+		add(loginPanel);
 
 		return loginPanel;
 	}
 	
-	
-
 	public static String getToken() {
 		return token;
 	}

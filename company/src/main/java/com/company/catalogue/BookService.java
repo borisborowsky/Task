@@ -3,19 +3,13 @@ package com.company.catalogue;
 import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import com.company.exception.RetriveResourceException;
 import com.company.utils.HibernateUtils;
 
-public class BookService implements ManageBook {
+class BookService implements ManageBook {
 
 	@Override
 	public void addBook(BookUnit book) {
@@ -61,7 +55,7 @@ public class BookService implements ManageBook {
 
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "unchecked" })
 	@Override
 	public List<BookUnit> fetchAllBooks() throws RetriveResourceException {
 		Transaction transaction = null;
@@ -81,5 +75,4 @@ public class BookService implements ManageBook {
 		}
 		return books;
 	}
-
 }

@@ -32,17 +32,17 @@ import com.company.users.Member;
 @Indexed
 @Table(name="book_tbl")
 public final class BookUnit extends Book {
-	public enum BookStatus { AVAILABLE,RESERVED,TAKEN,LOST }
+	enum BookStatus { AVAILABLE,RESERVED,TAKEN,LOST }
 	
 	private static final String DATE_PATTERN = "yyyy-MM-dd";
+	
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final double borrowPrice;
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "book_id")
 	private int id;
-	
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	private final double borrowPrice;
 	
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	private boolean isThereFineOnTheBook;
@@ -76,7 +76,6 @@ public final class BookUnit extends Book {
 
 	
 	@SuppressWarnings("deprecation")
-	public
 	BookUnit(int memberId, int id, String title, String type, String subject, 
 			String authour,  Date publishedDate, Member member, LocalDate borrowDate,
 			double borrowPrice) {
@@ -214,16 +213,4 @@ public final class BookUnit extends Book {
 			return false;
 		return true;
 	}
-
-
-	
-	
-//	@Override
-//	public String toString() {
-//		return "BookUnit [id=" + id + ", borrowPrice=" + borrowPrice + ", member=" + member + ", borrowDate="
-//				+ borrowDate + ", returnDate=" + returnDate + ", bookStatus=" + bookStatus + "]";
-//	}
-	
-	
-	
 }

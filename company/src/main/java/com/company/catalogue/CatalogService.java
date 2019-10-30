@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
+
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -24,6 +27,10 @@ import com.company.utils.HibernateUtils;;
 
 
 public class CatalogService implements Searchable {
+	@Context
+	SecurityContext securityContext;
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<BookUnit> search(BookUnit book) throws RetriveResourceException {
 		List<BookUnit> books = new ArrayList<>();
@@ -32,7 +39,8 @@ public class CatalogService implements Searchable {
 		
 		try (Session session = HibernateUtils.getSessionFactory().openSession()) {
 			transaction = session.beginTransaction();
-		    Criteria criteria = session.createCriteria(BookUnit.class);
+		    @SuppressWarnings("deprecation")
+			Criteria criteria = session.createCriteria(BookUnit.class);
 		    
 		    if (!book.getAuthour().equals(""))
 		    	criteria.add(Restrictions.eq("authour", book.getAuthour()));
@@ -42,9 +50,9 @@ public class CatalogService implements Searchable {
 		    	criteria.add(Restrictions.eq("subject", book.getSubject()));
 		    if (!book.getType().equals(""))
 		    	criteria.add(Restrictions.eq("type", book.getType()));
-		    if (!book.getPublishDate().equals("")) 
-		    	criteria.add(Restrictions.eq("publishDate", book.getPublishDate()));
-		    
+//		    if (!book.getPublishDate().equals("")) 
+//		    	criteria.add(Restrictions.eq("publishDate", book.getPublishDate()));
+//		    
 		    books =  criteria.list();
 	
 			transaction.commit();

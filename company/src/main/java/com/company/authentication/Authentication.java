@@ -2,7 +2,6 @@ package com.company.authentication;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.Consumes;
@@ -97,7 +96,6 @@ public class Authentication {
 			try {
 				fine = checkForBookDueDate(member, session);
 			} catch (NullPointerException e) {
-//				throw new NoFineException("No fine's found for user", e);
 				e.printStackTrace();
 			}
 			
@@ -143,6 +141,7 @@ public class Authentication {
 		for (BookUnit book : books) {
 			Date borrowedDate = book.getBorrowDate();
 			Date returnDate = book.getReturnDate();
+			
 			if (borrowedDate.after(returnDate) && !book.isThereFineOnTheBook()) {
 				long accumulatedFine = calculateFine(borrowedDate, returnDate);
 				fine = new Fine(new Date(), member, Fine.DEFAULT_FINE_SUM * accumulatedFine);

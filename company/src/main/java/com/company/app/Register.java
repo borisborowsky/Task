@@ -32,21 +32,29 @@ import com.company.app.utils.FComponent;
 public class Register extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
-	private Container container;
-	private JTextField tName;
+	private final String[] bulgarianCities = { "Varna", "Bourgas", "Sofia", "Plovdiv", "Montana", "Vraca", "Haskovo", "Veliko Turnovo",  };
+	
+	private final Container container;
+	private final JTextField tName;
+	private final JRadioButton male;
+	private final JRadioButton female;
+	private final  ButtonGroup gengp;
+	
+	
 	private JLabel mno;
 	private JTextField tfMobile;
-	private JRadioButton male;
-	private JRadioButton female;
-	private ButtonGroup gengp;
+	
 	private JComboBox cbCountry;
 	private JComboBox cbCity;
 	private JComboBox cbYear;
+	
 	private JTextArea tadd;
+	private JTextArea taResult;
+	
 	private JCheckBox term;
 	private JButton sub;
 	private JButton reset;
-	private JTextArea taResult;
+
 	private JLabel res;
 	private JTextArea resadd;
 	private JTextField tUsername;
@@ -56,11 +64,10 @@ public class Register extends JFrame {
 	private JTextField tPostalCode;
 	private JTextField tGender;
 	private JTextField tMobile;
+	
 	private MemberView member;
 
-	// constructor, to initialize the components
-	// with default values.
-	public Register() {
+	Register() {
 		setTitle("Registration Form");
 		setBounds(300, 90, 900, 600);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -101,7 +108,7 @@ public class Register extends JFrame {
 		term.setLocation(550, 510);
 		container.add(term);
 
-		sub = FComponent.getJButton(this, "Submit", 15, 100, 20, 530, 540, (ActionListener) arg0 -> {
+		sub = FComponent.getJButton(this, "Submit", 15, 100, 20, 530, 540, (ActionListener) a -> {
             String gender = "";
             if (male.isSelected())
                 gender = "MALE";
@@ -111,36 +118,36 @@ public class Register extends JFrame {
             member = new MemberView(gender, tName.getText(), tMobile.getText(),
                     (String) cbCountry.getSelectedItem(), (String) cbCity.getSelectedItem(), tPostalCode.getText(),
                     tUsername.getText(), tPassword.getText(), "ACTIVE");
-            String JSON_STRING = member.toString();
-            System.out.println(JSON_STRING);
-            new PostForm(JSON_STRING).execute();
+            String jsonDate = member.toString();
+            new PostForm(jsonDate).execute();
         });
 		
-		reset = FComponent.getJButton(this, "Reset", 15, 100, 20, 680, 540, e -> 
-		new Administrator().setVisible(true));
+		reset = FComponent.getJButton(this, "Reset", 15, 100, 20, 680, 540, 
+				e -> new Administrator().setVisible(true));
 
 		res = new JLabel("");
 		res.setFont(new Font("Arial", Font.PLAIN, 20));
 		res.setSize(500, 25);
 		res.setLocation(100, 500);
+		
 		container.add(res);
 
 		setVisible(true);
 	}
 
 	private class PostForm extends SwingWorker<MemberView, Void> {
-		private String JSON_STRING = "";
+		private String jsonDate = "";
 		private final String URL = "http://localhost:8080/company/webapi/members/member";
 
-		PostForm(final String JSON_STRING) {
-			this.JSON_STRING = JSON_STRING;
+		PostForm(final String jsonData) {
+			this.jsonDate = jsonData;
 		}
 
 		private void createMember() throws UnsupportedOperationException, IOException {
 
 			CloseableHttpClient httpClient = HttpClients.createDefault();
 
-			HttpEntity httpEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
+			HttpEntity httpEntity = new StringEntity(jsonDate, ContentType.APPLICATION_JSON);
 
 			HttpPost httpPost = new HttpPost(URL);
 			httpPost.setEntity(httpEntity);
@@ -156,6 +163,7 @@ public class Register extends JFrame {
 
 				BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
 				System.out.println("Output from server ... \n");
+				System.out.println(br.readLine());
 
 			} finally {
 				if (httpClient != null)
@@ -167,21 +175,13 @@ public class Register extends JFrame {
 
 		@Override
 		protected MemberView doInBackground() {
-			System.out.println("Do in background");
 			try {
 				createMember();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 			return null;
 		}
-		
-		 @Override
-		 protected void done() {
-		       
-		 }
 	}
 	
-	private final String[] bulgarianCities = { "Varna", "Bourgas", "Sofia", "Plovdiv", "Montana", "Vraca", "Haskovo", "Veliko Turnovo",  };
 }

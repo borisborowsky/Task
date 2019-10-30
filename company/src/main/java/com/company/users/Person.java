@@ -8,7 +8,6 @@ import javax.persistence.MappedSuperclass;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 
 @MappedSuperclass
@@ -149,7 +148,6 @@ public abstract class Person {
 		} else if (!phone.equals(other.phone))
 			return false;
 		return true;
-	}
-	
+	}	
 	
 }

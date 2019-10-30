@@ -1,8 +1,6 @@
 package com.company.users;
-import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
-
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -14,7 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
-import com.company.catalogue.BookUnit;
+import com.company.authentication.Secured;
 import com.company.catalogue.Fine;
 import com.company.exception.RetriveResourceException;
 import com.google.gson.Gson;
@@ -29,6 +27,7 @@ public class UserResource {
 	@Path("member")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Secured
 	public Member createMember(String json) {
 		Member member = new Gson().fromJson(json, Member.class);
 		try {
@@ -43,6 +42,7 @@ public class UserResource {
 	@Path("member/fines/{userId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
+	@Secured
 	public List<Fine> checkForFine(@PathParam("userId") int userId) {
 		List<Fine> fines = null;
 		try {
@@ -52,6 +52,4 @@ public class UserResource {
 		}
 		return fines;
 	}
-	
-
 }

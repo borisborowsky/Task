@@ -10,7 +10,6 @@ import javax.persistence.Table;
 
 import com.company.catalogue.Book;
 
-
 @Entity
 @Table(name="employee_tbl")
 public class Employee extends Person {

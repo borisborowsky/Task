@@ -21,6 +21,4 @@ public class Credentials implements Serializable {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
 }

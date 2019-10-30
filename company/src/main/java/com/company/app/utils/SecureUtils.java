@@ -1,4 +1,4 @@
-package com.company.utils;
+package com.company.app.utils;
 import java.util.UUID;
 
 public class SecureUtils {

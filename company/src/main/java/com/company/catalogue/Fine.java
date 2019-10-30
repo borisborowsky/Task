@@ -30,13 +30,14 @@ import com.company.users.Member;
 @Table(name="fine_table")
 public class Fine {
 	public static final double DEFAULT_FINE_SUM = 0x2.0p1F;
+	
+	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+	private final double fineAmount;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "fine_id")
 	private int id;
-	
-	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-	private final double fineAmount;
 	
 	@Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
 	private Date fineDate;
@@ -146,8 +147,4 @@ public class Fine {
 			return false;
 		return true;
 	}
-
-	
-	
-	
 }

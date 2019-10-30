@@ -44,7 +44,6 @@ public class BookPanel extends JFrame {
 		
 		FComponent.getJLabel(this, "Author", 15, 100, 20, 100, 100);
 	
-
 		tAuthour = FComponent.getJTextField(this, 15, 200, 20, 200, 100);
 
 		container = getContentPane();

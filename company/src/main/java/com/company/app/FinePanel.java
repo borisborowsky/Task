@@ -11,7 +11,7 @@ import javax.swing.JTextField;
 import com.company.app.data.Fine;
 import com.company.app.utils.FComponent;
 
-public class FinePanel extends JFrame {
+class FinePanel extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	private Container c;
@@ -19,8 +19,7 @@ public class FinePanel extends JFrame {
 	private JTextArea txtFine;
 	private final List<Fine> fines;
 
-
-	public FinePanel(List<Fine> fines) {
+	FinePanel(List<Fine> fines) {
 		setTitle("Fines");
 		setBounds(300, 90, 400, 400);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -40,14 +39,4 @@ public class FinePanel extends JFrame {
 
 		setVisible(true);
 	}
-	
-//	public static JTextArea getJTextArea(JFrame jFrame, int fontSize, int width, int height, int x, int y) {
-//		JTextArea jTextArea = new JTextArea();
-//		jTextArea.setFont(new Font("Arial", Font.PLAIN, fontSize));
-//		jTextArea.setSize(width, height);
-//		jTextArea.setLocation(x, y);
-//		jTextArea.setLineWrap(true);
-//		jFrame.getContentPane().add(jTextArea);
-//		return jTextArea;
-//	}
 }

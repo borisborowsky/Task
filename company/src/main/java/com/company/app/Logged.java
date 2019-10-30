@@ -1,6 +1,8 @@
 package com.company.app;
 
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -53,6 +55,13 @@ public class Logged extends JFrame {
 	private static final String URL_ENDPOINT_BORROW = "http://localhost:8080/company/webapi/catalog/borrow/";
 	private static final String URL_ENDPOINT_SEARCH_BOOK_TAKEN_BY_USER = "http://localhost:8080/company/webapi/catalog/search/borrowed/";
 
+	final private String dates[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15",
+			"16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
+	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
+	final private String years[] = { "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004",
+			"2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
+			"2018", "2019" };
+	
 	private final Vector<BookUnit> bookListView;
 	private final Vector<BookUnit> searchListView;
 	private final JList<BookUnit> bookList;
@@ -79,9 +88,7 @@ public class Logged extends JFrame {
 
 	private final String query = "";
 
-	// constructor, to initialize the components
-	// with default values.
-	public Logged() {
+	Logged() {
 		setTitle("Logged Frame");
 		setBounds(300, 90, 900, 600);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -95,6 +102,10 @@ public class Logged extends JFrame {
 		searchListView = new Vector();
 		bookListView = new Vector();
 		fieldList = new ArrayList<>();
+		
+		 Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	        // Set location of the window to center.
+	     setLocation(dimension.width/2-this.getSize().width/2, dimension.height/2-this.getSize().height/2);
 		
 		new Notify().execute();
 		
@@ -181,11 +192,11 @@ public class Logged extends JFrame {
 				date, new Date(), borrowPrice, BookStatus.AVAILABLE);
 	}
 
-	public class Search extends SwingWorker<List<BookUnit>, Void> {
-		private String JSON_STRING = "";
+	private class Search extends SwingWorker<List<BookUnit>, Void> {
+		private String jsonDate = "";
 
-		public Search(String JSON_STRING) {
-			this.JSON_STRING = JSON_STRING;
+		Search(String JSON_STRING) {
+			this.jsonDate = JSON_STRING;
 			System.out.println("Url in constructor" + JSON_STRING);
 		}
 
@@ -193,8 +204,7 @@ public class Logged extends JFrame {
 		protected List<BookUnit> doInBackground() {
 			List<BookUnit> result = null;
 			try {
-				result = search(JSON_STRING);
-				// TODO catch custom exception
+				result = search(jsonDate);
 			} catch (IOException e) {
 				Thread.currentThread().interrupt();
 				e.printStackTrace();
@@ -230,9 +240,6 @@ public class Logged extends JFrame {
 				result = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<BookUnit>>() {
 				}.getType());
 
-				for (int i = 0; i < result.size(); i++)
-					System.out.println(result.get(i));
-
 			} finally {
 				if (httpClient != null)
 					httpClient.close();
@@ -247,21 +254,19 @@ public class Logged extends JFrame {
 		protected void done() {
 			try {
 				List<BookUnit> list = get();
-				System.out.println(get().size() + " in get");
 				bookListView.addAll(list);
 				bookList.updateUI();
 			} catch (InterruptedException | ExecutionException e) {
 				Thread.currentThread().interrupt();
 				e.printStackTrace();
 			}
-
 		}
 	}
 
 	private class BookBorrow extends SwingWorker<Void, Void> {
 		private int bookId;
 
-		public BookBorrow(int bookId) {
+		BookBorrow(int bookId) {
 			this.bookId = bookId;
 		}
 
@@ -273,7 +278,6 @@ public class Logged extends JFrame {
 				String query = new StringBuilder(URL_ENDPOINT_BORROW).append(userId).append("/").append(bookId)
 						.toString();
 
-				System.out.println(query + " QUERY");
 				httpClient = HttpClients.createDefault();
 				HttpGet httpGet = new HttpGet(query);
 
@@ -302,19 +306,6 @@ public class Logged extends JFrame {
 					httpClient.close();
 			}
 		}
-
-
-//		protected void done() {
-////			BookUnit book = null;
-////			try {
-////				book = get();
-////			} catch (InterruptedException | ExecutionException e) {
-////
-////				e.printStackTrace();
-////			}
-//
-//		}
-
 		@Override
 		protected Void doInBackground() throws Exception {
 			borrowBook();
@@ -331,6 +322,7 @@ public class Logged extends JFrame {
 	 *
 	 */
 	private class Notify extends SwingWorker<List<Fine>, Void> {
+		
 		private List<Fine> checkForFines() throws IOException {
 			CloseableHttpClient httpClient = null;
 			List<Fine> fines = null;
@@ -340,7 +332,6 @@ public class Logged extends JFrame {
 				String query = new StringBuilder(FINE_CHECK_ENDPOINT).append(userId)
 						.toString();
 
-				System.out.println(query + " QUERY");
 				httpClient = HttpClients.createDefault();
 				HttpGet httpGet = new HttpGet(query);
 
@@ -360,8 +351,10 @@ public class Logged extends JFrame {
 
 				System.out.println("Response from server: \n");
 				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+				
 				fines = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<Fine>>() {
 				}.getType());
+				
 			} catch (IOException e) {
 				Thread.currentThread().interrupt();
 				e.printStackTrace();
@@ -371,11 +364,7 @@ public class Logged extends JFrame {
 			}
 			return fines;
 		}
-//		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-//        // Set location of the window to center.
-//        chooseDataSetDialog.getDialog()
-//        .setLocation(dimension.width/2-machineLearningPanel.getSize().width/2, 
-//        		dimension.height/2-machineLearningPanel.getSize().height/2);
+
 		@Override
 		protected void done() {
 			List<Fine> fines = null;
@@ -398,6 +387,7 @@ public class Logged extends JFrame {
 	}
 
 	private class UserCatalogue extends SwingWorker<List<BookUnit>, Void> {
+		
 		private List<BookUnit> searchTakenBooks() throws IOException {
 			List<BookUnit> books = null;
 			CloseableHttpClient httpClient = null;
@@ -454,7 +444,6 @@ public class Logged extends JFrame {
 			}
 			searchListView.addAll(books);
 			searchList.updateUI();
-			System.out.println(books.size() + " size");
 		}
 
 		@Override
@@ -462,12 +451,5 @@ public class Logged extends JFrame {
 			return searchTakenBooks();
 		}
 	}
-
-	final private String dates[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15",
-			"16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
-	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
-	final private String years[] = { "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004",
-			"2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
-			"2018", "2019" };
 
 }

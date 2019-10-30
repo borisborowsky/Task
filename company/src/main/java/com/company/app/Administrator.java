@@ -38,6 +38,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import com.company.app.data.BookUnit.BookStatus;
+import com.company.app.data.Fine;
 import com.company.app.utils.FComponent;
 import com.company.app.data.BookUnit;
 import com.google.gson.Gson;
@@ -48,6 +49,14 @@ public class Administrator extends JFrame {
 	private static final String ADD_BOOK_ENDPOINT = "http://localhost:8080/company/webapi/books/add/book";
 	private static final String REMOVE_BOOK_ENDPOINT = "http://localhost:8080/company/webapi/books/remove/book/";
 	private static final String FETCH_ALL_BOOK_ENDPOINT = "http://localhost:8080/company/webapi/books/all";
+	private static final String FETCH_FINE_USER_ENDPOINT = "http://localhost:8080/company/webapi/books/all";
+	
+	final private String dates[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14",
+			"15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
+	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
+	final private String years[] = { "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004",
+			"2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
+			"2018", "2019" };
 	
 	private final Container container;
 
@@ -62,18 +71,24 @@ public class Administrator extends JFrame {
 	private final JComboBox cbDates;
 
 	private final JButton btnAdd;
+	private final JButton fetchFinesBtn;
 	private final JButton btnRemove;
 	private final JButton fetchAllBooks;
 	
 	private final Vector<BookUnit> bookListView;
 	private final JList<BookUnit> bookList;
+	
+	private final Vector<Fine> fineViewList;
+	private final JList<Fine> fineList;
 
+	@SuppressWarnings("unchecked")
 	public Administrator() {
 		setTitle("Administrator Panel");
 		setBounds(300, 90, 900, 600);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
 		bookListView = new Vector<>();
+		fineViewList = new Vector<>();
 		
 		FComponent.getJLabel(this, "Manage Books", 30, 300, 30, 300, 30);
 
@@ -97,6 +112,17 @@ public class Administrator extends JFrame {
 		tType = FComponent.getJTextField(this, 15, 200, 20, 200, 350);
 		tBookStatus = FComponent.getJTextField(this, 15, 200, 20, 200, 400);
 
+		fetchFinesBtn = FComponent.getJButton(this, "Fines", 15, 100, 20, 50, 500, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("FIRE in eeee");
+				new BookAdd(createBook()).execute();
+			}
+
+		});
+		
+		
 		btnAdd = FComponent.getJButton(this, "Add", 15, 100, 20, 130, 500, new ActionListener() {
 
 			@Override
@@ -134,7 +160,16 @@ public class Administrator extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				
 			}
-		}, bookListView, 500, 100);
+		}, bookListView, 450, 100);
+		
+		FComponent.getJLabel(this, "Book List:", 20, 200, 100, 600, 70);
+		fineList = FComponent.getJList(this, new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+			}
+		}, fineViewList, 670, 100);
+	
 		
 		container = getContentPane();
 		container.setLayout(null);
@@ -155,11 +190,11 @@ public class Administrator extends JFrame {
 		return new Gson().toJson(book);
 	}
 
-	public class BookAdd extends SwingWorker<BookUnit, Void> {
-		private String JSON_STRING = "";
+	private class BookAdd extends SwingWorker<BookUnit, Void> {
+		private String jsonData = "";
 
-		public BookAdd(String JSON_STRING) {
-			this.JSON_STRING = JSON_STRING;
+		BookAdd(String JSON_STRING) {
+			this.jsonData = JSON_STRING;
 			System.out.println("Url in constructor" + JSON_STRING);
 		}
 
@@ -167,7 +202,7 @@ public class Administrator extends JFrame {
 		protected BookUnit doInBackground() {
 			BookUnit book = null;
 			try {
-				book = search(JSON_STRING);
+				book = search(jsonData);
 
 			} catch (IOException e) {
 				Thread.currentThread().interrupt();
@@ -176,20 +211,16 @@ public class Administrator extends JFrame {
 			return book;
 		}
 
-		private BookUnit search(String JSON_STRING) throws RuntimeException, IOException {
+		private BookUnit search(String jsonData) throws RuntimeException, IOException {
 			BookUnit book = null;
 			CloseableHttpClient httpClient = null;
 
 			httpClient = HttpClients.createDefault();
-			System.out.println(JSON_STRING + " JSON STRING");
-			HttpEntity httpEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
+			HttpEntity httpEntity = new StringEntity(jsonData, ContentType.APPLICATION_JSON);
 
 			HttpPost httpPost = new HttpPost(ADD_BOOK_ENDPOINT);
 			httpPost.setHeader(HttpHeaders.AUTHORIZATION, App.getToken());
 			httpPost.setEntity(httpEntity);
-
-			System.out.println(App.getToken());
-			System.out.println(httpPost.getHeaders("Autorization").toString());
 
 			CloseableHttpResponse response = null;
 
@@ -202,8 +233,6 @@ public class Administrator extends JFrame {
 
 				BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
 				book = new Gson().fromJson(br.readLine(), BookUnit.class);
-
-				System.out.println(book);
 
 			} finally {
 				if (httpClient != null)
@@ -233,7 +262,7 @@ public class Administrator extends JFrame {
 	private class BookDelete extends SwingWorker<BookUnit, Void> {
 		private int bookId;
 
-		public BookDelete(int bookId) {
+		BookDelete(int bookId) {
 			this.bookId = bookId;
 		}
 
@@ -243,12 +272,12 @@ public class Administrator extends JFrame {
 			try {
 				String query = new StringBuilder(REMOVE_BOOK_ENDPOINT).append(bookId).toString();
 
-				System.out.println(query + " QUERY");
 				httpClient = HttpClients.createDefault();
 				HttpGet httpGet = new HttpGet(query);
 					
 				httpGet.setHeader(HttpHeaders.AUTHORIZATION, App.getToken());
 				CloseableHttpResponse response = null;
+				
 				try {
 					response = httpClient.execute(httpGet);
 
@@ -261,6 +290,7 @@ public class Administrator extends JFrame {
 				}
 
 				System.out.println("Response from server: \n");
+				
 				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 				book = new Gson().fromJson(br.readLine(), BookUnit.class);
 				System.out.println(br.readLine());
@@ -269,20 +299,25 @@ public class Administrator extends JFrame {
 				e.printStackTrace();
 			} finally {
 				if (httpClient != null)
-					httpClient.close();
+					httpClient.close();	
 			}
 			return book;
 		}
 
 		@Override
-		protected BookUnit doInBackground() throws Exception {
+		protected BookUnit doInBackground() {
 			BookUnit book = null;
-			book = deleteBook();
+			try {
+				book = deleteBook();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			return book;
 		}
 	}
 	
 	private class FetchAllBook extends SwingWorker<List<BookUnit>, Void> {
+		
 		private List<BookUnit> getAllBooks() throws IOException {
 			List<BookUnit> books = null;
 			CloseableHttpClient httpClient = null;
@@ -290,7 +325,7 @@ public class Administrator extends JFrame {
 				String query = new StringBuilder(FETCH_ALL_BOOK_ENDPOINT)
 						.toString();
 						
-				System.out.println(query + " QUERY");
+	
 				httpClient = HttpClients.createDefault();
 				HttpGet httpGet = new HttpGet(query);
 
@@ -337,7 +372,6 @@ public class Administrator extends JFrame {
 		protected void done() {
 			List<BookUnit> books = null;
 			try {
-				System.out.println(get());
 				books = get();
 			} catch (InterruptedException | ExecutionException e) {
 				Thread.currentThread().interrupt();
@@ -347,11 +381,73 @@ public class Administrator extends JFrame {
 			bookList.updateUI();
 		}
 	}
+	
+	private class FetchAllFine extends SwingWorker<List<Fine>, Void> {
+		
+		private List<Fine> getAllFines() throws IOException {
+			List<Fine> fines = null;
+			CloseableHttpClient httpClient = null;
+			try {
+				
+				String query = new StringBuilder(FETCH_ALL_BOOK_ENDPOINT)
+						.toString();
+						
+				httpClient = HttpClients.createDefault();
+				HttpGet httpGet = new HttpGet(query);
 
-	final private String dates[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14",
-			"15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
-	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
-	final private String years[] = { "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004",
-			"2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017",
-			"2018", "2019" };
+				httpGet.setHeader(HttpHeaders.AUTHORIZATION, App.getToken());
+				
+				CloseableHttpResponse response = null;
+				try {
+					response = httpClient.execute(httpGet);
+
+					if (response.getStatusLine().getStatusCode() != 200) {
+						throw new RuntimeException(
+								"Failed : Http error code " + response.getStatusLine().getStatusCode());
+					}
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+
+				System.out.println("Response from server: \n");
+				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+				fines = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<BookUnit>>() {
+				}.getType());
+				System.out.println(br.readLine());
+				
+			} catch (IOException e) {
+				Thread.currentThread().interrupt();
+				e.printStackTrace();
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+			}
+			return fines;
+		}
+
+		@Override
+		protected List<Fine> doInBackground()  {
+			List<Fine> fines = null;	
+			try {
+				fines = getAllFines();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return fines;
+		}
+		
+		@Override
+		protected void done() {
+			List<Fine> fines = null;
+			try {
+				System.out.println(get());
+				fines = get();
+			} catch (InterruptedException | ExecutionException e) {
+				Thread.currentThread().interrupt();
+				e.printStackTrace();
+			}
+			fineViewList.addAll(fines);
+			fineList.updateUI();
+		}
+	}
 }
