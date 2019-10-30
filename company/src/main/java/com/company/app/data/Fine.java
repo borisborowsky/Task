@@ -28,6 +28,7 @@ import com.company.users.Member;
 public class Fine {
 	public static final double DEFAULT_FINE_SUM = 0x2.0p1F;
 	private final double fineAmount;
+	
 	private int id;
 
 	private Date fineDate;
@@ -121,8 +122,6 @@ public class Fine {
 
 	private String formatDate(Date date) {
 		String pattern = "MM/dd/yyyy HH:mm:ss";
-		// Create an instance of SimpleDateFormat used for formatting
-		// the string representation of date according to the chosen pattern
 		DateFormat df = new SimpleDateFormat(pattern);
 		String sDate = df.format(date);
 		return sDate;

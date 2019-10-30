@@ -9,7 +9,7 @@ import org.hibernate.Transaction;
 import com.company.exception.RetriveResourceException;
 import com.company.utils.HibernateUtils;
 
-class BookService implements ManageBook {
+class BookService implements Catalog {
 
 	@Override
 	public void addBook(BookUnit book) {

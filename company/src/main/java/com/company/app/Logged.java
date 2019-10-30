@@ -54,7 +54,8 @@ public class Logged extends JFrame {
 	private static final String URL_ENDPOINT_CATALOG = "http://localhost:8080/company/webapi/catalog/search/";
 	private static final String URL_ENDPOINT_BORROW = "http://localhost:8080/company/webapi/catalog/borrow/";
 	private static final String URL_ENDPOINT_SEARCH_BOOK_TAKEN_BY_USER = "http://localhost:8080/company/webapi/catalog/search/borrowed/";
-
+	private static final String URL_ENDPOINT_UNBORROW = "http://localhost:8080/company/webapi/members/unborrow/";
+	
 	final private String dates[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15",
 			"16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
 	final private String months[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" };
@@ -85,7 +86,8 @@ public class Logged extends JFrame {
 	private JButton btnSearch;
 	private JButton btnBorrow;
 	private JButton btnRemove;
-
+	private JButton btnReturn;
+	
 	private final String query = "";
 
 	Logged() {
@@ -152,6 +154,8 @@ public class Logged extends JFrame {
 		cbDates = FComponent.getJComboBox(this, dates, 13, 70, 20, 200, 100);
 		cbMonth = FComponent.getJComboBox(this, months, 13, 70, 20, 270, 100);
 		cbYear = FComponent.getJComboBox(this, years, 13, 70, 20, 340, 100);
+		
+		
 
 		btnSearch = FComponent.getJButton(this, "Search", 15, 100, 20, 530, 540, a -> {
 			bookListView.clear();
@@ -168,10 +172,19 @@ public class Logged extends JFrame {
 			System.out.println(App.getUserId() + " User id in Logged");
 			new BookBorrow(book.getId()).execute();
 		});
+		
+		btnReturn = FComponent.getJButton(this, "Return", 15, 100, 20, 80, 540, a -> {
+			BookUnit book = searchList.getSelectedValue();
+			System.out.println(App.getUserId() + " User id in Logged");
+			System.out.println(book);
+				new UnBorrowBook(book.getId()).execute();
+		});
 
 		btnTaken = FComponent.getJButton(this, "Your books", 15, 100, 20, 240, 540, a -> {
 			new UserCatalogue().execute();
 		});
+		
+		
 	
 		c = getContentPane();
 
@@ -449,6 +462,56 @@ public class Logged extends JFrame {
 		@Override
 		protected List<BookUnit> doInBackground() throws Exception {
 			return searchTakenBooks();
+		}
+	}
+	
+	private class UnBorrowBook extends SwingWorker<Void, Void> {
+		private int bookId;
+
+		UnBorrowBook(int bookId) {
+			this.bookId = bookId;
+		}
+
+		private void unBorrowBook() throws IOException {
+			CloseableHttpClient httpClient = null;
+			try {
+				String userId = String.valueOf(App.getUserId());
+				System.out.println(userId + "Unborrow");
+				String query = new StringBuilder(URL_ENDPOINT_UNBORROW).append(userId).append("/").append(bookId)
+						.toString();
+
+				httpClient = HttpClients.createDefault();
+				HttpGet httpGet = new HttpGet(query);
+
+				httpGet.setHeader(HttpHeaders.AUTHORIZATION, App.getToken());
+				CloseableHttpResponse response = null;
+				try {
+					response = httpClient.execute(httpGet);
+
+					if (response.getStatusLine().getStatusCode() != 200) {
+						throw new RuntimeException(
+								"Failed : Http error code " + response.getStatusLine().getStatusCode());
+					}
+				} catch (RuntimeException e) {
+					LOGGER.log(Level.SEVERE, e.toString(), e);
+					e.printStackTrace();
+				}
+
+				System.out.println("Response from server: \n");
+				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+				System.out.println(br.readLine());
+			} catch (IOException e) {
+				Thread.currentThread().interrupt();
+				e.printStackTrace();
+			} finally {
+				if (httpClient != null)
+					httpClient.close();
+			}
+		}
+		@Override
+		protected Void doInBackground() throws Exception {
+			unBorrowBook();
+			return null;
 		}
 	}
 

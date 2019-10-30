@@ -32,7 +32,7 @@ import com.company.users.Member;
 @Indexed
 @Table(name="book_tbl")
 public final class BookUnit extends Book {
-	enum BookStatus { AVAILABLE,RESERVED,TAKEN,LOST }
+	public enum BookStatus { AVAILABLE,RESERVED,TAKEN,LOST }
 	
 	private static final String DATE_PATTERN = "yyyy-MM-dd";
 	

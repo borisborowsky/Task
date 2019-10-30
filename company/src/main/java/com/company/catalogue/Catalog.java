@@ -4,7 +4,8 @@ import java.util.List;
 
 import com.company.exception.RetriveResourceException;
 
-interface Catalog {
-	BookUnit search(int userId, int bookId) throws RetriveResourceException;
-	List<BookUnit> search(String json) throws RetriveResourceException;
+interface Catalog  {
+	void addBook(BookUnit book) throws RetriveResourceException;
+    void removeBook(int id) throws RetriveResourceException;
+    List<BookUnit> fetchAllBooks() throws RetriveResourceException;
 }

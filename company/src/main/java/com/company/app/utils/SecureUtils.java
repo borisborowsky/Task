@@ -10,7 +10,7 @@ public class SecureUtils {
 	 }
 	 
 	 public static boolean is_Valid_Password(String password) {
-
+		 	
 			if (password.length() < PASSWORD_LENGTH)
 				return false;
 
@@ -19,7 +19,7 @@ public class SecureUtils {
 			for (int i = 0; i < password.length(); i++) {
 
 				char ch = password.charAt(i);
-
+				
 				if (is_Numeric(ch))
 					numCount++;
 				else if (is_Letter(ch))

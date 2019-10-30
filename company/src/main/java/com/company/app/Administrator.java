@@ -49,7 +49,7 @@ public class Administrator extends JFrame {
 	private static final String ADD_BOOK_ENDPOINT = "http://localhost:8080/company/webapi/books/add/book";
 	private static final String REMOVE_BOOK_ENDPOINT = "http://localhost:8080/company/webapi/books/remove/book/";
 	private static final String FETCH_ALL_BOOK_ENDPOINT = "http://localhost:8080/company/webapi/books/all";
-	private static final String FETCH_FINE_USER_ENDPOINT = "http://localhost:8080/company/webapi/books/all";
+	private static final String FETCH_FINE_USER_ENDPOINT = "http://localhost:8080/company/webapi/members/member/fines/all";
 	
 	final private String dates[] = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14",
 			"15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
@@ -75,11 +75,13 @@ public class Administrator extends JFrame {
 	private final JButton btnRemove;
 	private final JButton fetchAllBooks;
 	
-	private final Vector<BookUnit> bookListView;
-	private final JList<BookUnit> bookList;
+	private final Vector<BookUnit> bookList;
+	private final JList<BookUnit> bookListView;
 	
-	private final Vector<Fine> fineViewList;
-	private final JList<Fine> fineList;
+	private final Vector<Fine> fineList;
+	private final JList<Fine> fineListView;
+	
+	private final JTextArea txtDescription;
 
 	@SuppressWarnings("unchecked")
 	public Administrator() {
@@ -87,8 +89,8 @@ public class Administrator extends JFrame {
 		setBounds(300, 90, 900, 600);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setResizable(false);
-		bookListView = new Vector<>();
-		fineViewList = new Vector<>();
+		bookList = new Vector<>();
+		fineList = new Vector<>();
 		
 		FComponent.getJLabel(this, "Manage Books", 30, 300, 30, 300, 30);
 
@@ -112,33 +114,21 @@ public class Administrator extends JFrame {
 		tType = FComponent.getJTextField(this, 15, 200, 20, 200, 350);
 		tBookStatus = FComponent.getJTextField(this, 15, 200, 20, 200, 400);
 
-		fetchFinesBtn = FComponent.getJButton(this, "Fines", 15, 100, 20, 50, 500, new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("FIRE in eeee");
-				new BookAdd(createBook()).execute();
-			}
-
-		});
 		
 		
-		btnAdd = FComponent.getJButton(this, "Add", 15, 100, 20, 130, 500, new ActionListener() {
-
+		btnAdd = FComponent.getJButton(this, "Add", 15, 100, 20, 150, 500, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("FIRE in eeee");
 				new BookAdd(createBook()).execute();
 			}
 
 		});
 
 		btnRemove = FComponent.getJButton(this, "Remove", 15, 100, 20, 270, 500, new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("FIRE in eeee");
-				BookUnit bookItem = (BookUnit) bookList.getSelectedValue();
+				BookUnit bookItem = (BookUnit) bookListView.getSelectedValue();
 				new BookDelete(bookItem.getId()).execute();
 			}
 
@@ -147,29 +137,45 @@ public class Administrator extends JFrame {
 		fetchAllBooks = FComponent.getJButton(this, "List books", 15, 100, 20, 410, 500, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				bookListView.clear();
+				bookList.clear();
 				fetchAllBooks.updateUI();
 				new FetchAllBook().execute();
 			}
 
 		});
-
-		FComponent.getJLabel(this, "Book List:", 20, 200, 100, 600, 70);
-		bookList = FComponent.getJList(this, new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				
-			}
-		}, bookListView, 450, 100);
 		
-		FComponent.getJLabel(this, "Book List:", 20, 200, 100, 600, 70);
-		fineList = FComponent.getJList(this, new MouseAdapter() {
+		fetchFinesBtn = FComponent.getJButton(this, "Fines", 15, 100, 20, 30, 500, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fineList.clear();
+				fineListView.updateUI();
+				new FetchAllFine().execute();
+			}
+
+		});
+
+		FComponent.getJLabel(this, "Book List:", 20, 200, 100, 500, 170);
+		bookListView = FComponent.getJList(this, new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				
+				BookUnit bookItem = (BookUnit) bookListView.getSelectedValue();
+				txtDescription.setText("");
+				txtDescription.setText(bookItem.createView());
 			}
-		}, fineViewList, 670, 100);
-	
+		}, bookList, 460, 240);
+		
+		FComponent.getJLabel(this, "Fine List:", 20, 200, 100, 740, 170);
+		fineListView = FComponent.getJList(this, new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				Fine fineItem = (Fine) fineListView.getSelectedValue();
+				txtDescription.setText("");
+				txtDescription.setText(fineItem.toString());
+			}
+		}, fineList, 670, 240);
+		
+		txtDescription = FComponent.getJTextArea(this, 13, 200, 150, 550, 30);
 		
 		container = getContentPane();
 		container.setLayout(null);
@@ -193,9 +199,8 @@ public class Administrator extends JFrame {
 	private class BookAdd extends SwingWorker<BookUnit, Void> {
 		private String jsonData = "";
 
-		BookAdd(String JSON_STRING) {
-			this.jsonData = JSON_STRING;
-			System.out.println("Url in constructor" + JSON_STRING);
+		BookAdd(String jsonDate) {
+			this.jsonData = jsonDate;
 		}
 
 		@Override
@@ -249,8 +254,6 @@ public class Administrator extends JFrame {
 			BookUnit book = null;
 			try {
 				book = get();
-				System.out.println(book + " get");
-				System.out.println(get() + " in get");
 			} catch (InterruptedException | ExecutionException e) {
 				Thread.currentThread().interrupt();
 				e.printStackTrace();
@@ -377,8 +380,8 @@ public class Administrator extends JFrame {
 				Thread.currentThread().interrupt();
 				e.printStackTrace();
 			}
-			bookListView.addAll(books);
-			bookList.updateUI();
+			bookList.addAll(books);
+			bookListView.updateUI();
 		}
 	}
 	
@@ -389,7 +392,7 @@ public class Administrator extends JFrame {
 			CloseableHttpClient httpClient = null;
 			try {
 				
-				String query = new StringBuilder(FETCH_ALL_BOOK_ENDPOINT)
+				String query = new StringBuilder(FETCH_FINE_USER_ENDPOINT)
 						.toString();
 						
 				httpClient = HttpClients.createDefault();
@@ -411,9 +414,10 @@ public class Administrator extends JFrame {
 
 				System.out.println("Response from server: \n");
 				BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-				fines = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<BookUnit>>() {
+				fines = new Gson().fromJson(br.readLine(), new TypeToken<ArrayList<Fine>>() {
 				}.getType());
 				System.out.println(br.readLine());
+				System.out.println(fines.get(0).toString() + " response from serv");
 				
 			} catch (IOException e) {
 				Thread.currentThread().interrupt();
@@ -440,14 +444,13 @@ public class Administrator extends JFrame {
 		protected void done() {
 			List<Fine> fines = null;
 			try {
-				System.out.println(get());
 				fines = get();
 			} catch (InterruptedException | ExecutionException e) {
 				Thread.currentThread().interrupt();
 				e.printStackTrace();
 			}
-			fineViewList.addAll(fines);
-			fineList.updateUI();
+			fineList.addAll(fines);
+			fineListView.updateUI();
 		}
 	}
 }

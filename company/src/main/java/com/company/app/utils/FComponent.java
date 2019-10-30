@@ -23,6 +23,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -115,6 +116,15 @@ public class FComponent {
 		return jTextField;
 	}
 	
+	public static JPasswordField getJTextPassword(JFrame jFrame, int fontSize, int width, int height, int x, int y) {
+		JPasswordField jTextField = new JPasswordField();
+		jTextField.setFont(new Font("Verdana", Font.PLAIN, fontSize));
+		jTextField.setSize(width, height);
+		jTextField.setLocation(x, y);
+		jFrame.getContentPane().add(jTextField);
+		return jTextField;
+	}
+	
 	public static JTextField getJTextField(JFrame jFrame, int fontSize, int width, int height, int x, int y) {
 		JTextField jTextField = new JTextField();
 		jTextField.setFont(new Font("Verdana", Font.PLAIN, fontSize));
@@ -123,6 +133,8 @@ public class FComponent {
 		jFrame.getContentPane().add(jTextField);
 		return jTextField;
 	}
+	
+	
 
 	public static ButtonGroup getButtonGroup(JRadioButton val1, JRadioButton val2) {
 		ButtonGroup buttonGroup = new ButtonGroup();

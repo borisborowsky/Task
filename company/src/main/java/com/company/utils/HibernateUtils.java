@@ -30,7 +30,7 @@ public class HibernateUtils {
 
 	            Map<String, Object> settings = new HashMap<>();
 	            settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
-	            settings.put(Environment.URL, "jdbc:mysql://localhost:3306/library6");
+	            settings.put(Environment.URL, "jdbc:mysql://localhost:3306/library7");
 	            settings.put(Environment.USER, "root");
 	            settings.put(Environment.PASS, "280486");
 	            settings.put(Environment.HBM2DDL_AUTO, "update");
@@ -39,7 +39,7 @@ public class HibernateUtils {
 	            
 	            // Hibernate search properties
 	            settings.put("hibernate.search.default.directory_provider", "filesystem");
-	            settings.put("hibernate.search.default.indexBase", "C:/hibernate/lucence/indexes6");
+	            settings.put("hibernate.search.default.indexBase", "C:/hibernate/lucence/indexes7");
 	            settings.put("hibernate.search.default.indexwriter.infostream", true);
 
 	            registryBuilder.applySettings(settings);

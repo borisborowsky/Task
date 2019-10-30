@@ -13,6 +13,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -28,6 +29,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import com.company.app.data.MemberView;
 import com.company.app.utils.FComponent;
+import com.company.app.utils.SecureUtils;
 
 public class Register extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -56,9 +58,11 @@ public class Register extends JFrame {
 	private JButton reset;
 
 	private JLabel res;
+	private JLabel passwordNotifyLbl;
 	private JTextArea resadd;
 	private JTextField tUsername;
-	private JTextField tPassword;
+	private JPasswordField tPassword;
+	
 	private JTextField tCountry;
 	private JTextField tCity;
 	private JTextField tPostalCode;
@@ -85,21 +89,24 @@ public class Register extends JFrame {
 		FComponent.getJLabel(this, "Postal code", 15, 100, 20, 100, 350);
 		FComponent.getJLabel(this, "Username", 15, 100, 20, 100, 400);
 		FComponent.getJLabel(this, "Password", 15, 100, 20, 100, 450);
-
+		
 		resadd = FComponent.getJTextArea(this, 15, 200, 75, 580, 175);
 		cbCity = FComponent.getJComboBox(this, bulgarianCities, 15, 190, 20, 200, 250);
 		cbCountry = FComponent.getJComboBox(this, new String[] { "Bulgaria" }, 15, 190, 20, 200, 300);
 		tMobile = FComponent.getJTextField(this, 15, 190, 20, 200, 150);
 		tPostalCode = FComponent.getJTextField(this, 15, 190, 20, 200, 350);
 		tUsername = FComponent.getJTextField(this, 15, 190, 20, 200, 400);
-		tPassword = FComponent.getJTextField(this, 15, 190, 20, 200, 450);
+		tPassword = FComponent.getJTextPassword(this, 15, 190, 20, 200, 450);
+
 		taResult = FComponent.getJTextArea(this, 15, 300, 400, 500, 100);
 		taResult.setEditable(false);
 
 		male = FComponent.getJRadionButton(this, "Male", 15, 75, 20, 200, 200, true);
 		female = FComponent.getJRadionButton(this, "Female", 15, 80, 20, 275, 200, false);
 		tName = FComponent.getJTextField(this, 15, 190, 20, 200, 100);
-
+		
+		passwordNotifyLbl = FComponent.getJLabel(this, "", 15, 200, 20, 300, 500);
+		
 		gengp = FComponent.getButtonGroup(male, female);
 
 		term = new JCheckBox("Accept Terms And Conditions.");
@@ -108,18 +115,26 @@ public class Register extends JFrame {
 		term.setLocation(550, 510);
 		container.add(term);
 
-		sub = FComponent.getJButton(this, "Submit", 15, 100, 20, 530, 540, (ActionListener) a -> {
-            String gender = "";
+		sub = FComponent.getJButton(this, "Submit", 15, 100, 20, 530, 540, 
+				e -> {
+            
+			String gender = "";
             if (male.isSelected())
                 gender = "MALE";
             else
                 gender = "FEMALE";
+      
+            if (SecureUtils.is_Valid_Password(tPassword.getText())) {       
+                passwordNotifyLbl.setText("");
+            	member = new MemberView(gender, tName.getText(), tMobile.getText(),
+                        (String) cbCountry.getSelectedItem(), (String) cbCity.getSelectedItem(), tPostalCode.getText(),
+                        tUsername.getText(), tPassword.getText(), "ACTIVE");
+                String jsonDate = member.toString();    
+                new PostForm(jsonDate).execute();
+            } else {
+            	passwordNotifyLbl.setText("Please enter a valid password");
+            }    
             
-            member = new MemberView(gender, tName.getText(), tMobile.getText(),
-                    (String) cbCountry.getSelectedItem(), (String) cbCity.getSelectedItem(), tPostalCode.getText(),
-                    tUsername.getText(), tPassword.getText(), "ACTIVE");
-            String jsonDate = member.toString();
-            new PostForm(jsonDate).execute();
         });
 		
 		reset = FComponent.getJButton(this, "Reset", 15, 100, 20, 680, 540, 

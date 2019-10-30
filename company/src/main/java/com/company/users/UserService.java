@@ -1,5 +1,8 @@
 package com.company.users;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,7 +15,9 @@ import org.hibernate.search.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
 
 import com.company.catalogue.Book;
+import com.company.catalogue.BookUnit;
 import com.company.catalogue.Fine;
+import com.company.catalogue.BookUnit.BookStatus;
 import com.company.exception.RetriveResourceException;
 import com.company.utils.HibernateUtils;
 
@@ -93,27 +98,45 @@ public class UserService implements Administrator, Customer {
 	}
 
 	@Override
-	public void removeMember(Member member) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void blockMember(Member member) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void unblockMember(Member member) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void returnBook(Book book) {
-		// TODO Auto-generated method stub
-
+	public BookUnit unBorrowBook(int userId, int bookId) throws RetriveResourceException {
+		Transaction transaction = null;
+		Member member = null;
+		BookUnit book = null;
+		
+		try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+			transaction = session.beginTransaction();
+			
+			member = session.get(Member.class, userId);
+			
+			book = session.get(BookUnit.class, bookId);
+			
+			System.out.println(member + "Member");
+			System.out.println(book + "Book");
+		
+			book.setMember(null);
+			
+			LocalDate ld = LocalDate.now().plusMonths(1);
+			Date date = Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
+			book.setBorrowDate(null);
+			book.setReturnDate(null);
+			book.setBookStatus(BookStatus.AVAILABLE);
+		
+			member.getBorrowedBoooks().remove(book);
+			
+			session.save(book);
+			session.save(member);
+			
+			
+			transaction.commit();
+			session.close();
+		} catch (HibernateException e) {
+			if (transaction != null)
+				transaction.rollback();
+			e.printStackTrace();
+			throw new RetriveResourceException("Cannot retrive resource from database : " 
+					+ member + "\n" + book, e);
+		}
+		return book;
 	}
 
 	@Override
@@ -121,5 +144,25 @@ public class UserService implements Administrator, Customer {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public void removeMember(Member member) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void blockMember(Member member) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void unblockMember(Member member) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+
 
 }

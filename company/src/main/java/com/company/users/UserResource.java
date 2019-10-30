@@ -13,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
 import com.company.authentication.Secured;
+import com.company.catalogue.BookUnit;
+import com.company.catalogue.CatalogService;
 import com.company.catalogue.Fine;
 import com.company.exception.RetriveResourceException;
 import com.google.gson.Gson;
@@ -27,7 +29,6 @@ public class UserResource {
 	@Path("member")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@Secured
 	public Member createMember(String json) {
 		Member member = new Gson().fromJson(json, Member.class);
 		try {
@@ -51,5 +52,37 @@ public class UserResource {
 			e.printStackTrace();
 		}
 		return fines;
+	}
+	
+	@GET
+	@Path("member/fines/all")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Secured
+	public List<Fine> fetchAllFines() {
+		List<Fine> fines = null;
+		System.out.println(securityContext.getUserPrincipal().getName());
+		try {
+			fines = new UserService().fetchAllFines();
+		} catch (RetriveResourceException e) {
+			e.printStackTrace();
+		}
+		return fines;
+	}
+	
+	
+	@GET
+	@Path("unborrow/{userId}/{bookId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Secured
+	public BookUnit borrowBook(@PathParam("userId") int userId, @PathParam("bookId") int bookId) {
+		BookUnit book = null;
+		try {
+			book = new UserService().unBorrowBook(userId, bookId);
+		} catch (RetriveResourceException e) {
+			e.printStackTrace();
+		}
+		return book;
 	}
 }
